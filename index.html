@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>نظام معراج للعقار</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: هادئ وفخم ومهني — مكتب عقار يثق بيه الزبون والشريك
+   IDEA: ملف عقار مرتب: بطاقة لكل عقار، ودفتر حسابات واضح
+   PICTURE: صورة العقار نفسها هي البطل؛ برج معراج علامة خفيفة
+   COLOUR and TYPE: ذهبي معراج #C39A5E، عاجي، فحمي؛ IBM Plex Sans Arabic
+   LAYOUT: الإدارة: شريط جانبي يمين ومحتوى؛ الزبون: شبكة بطاقات بعرض كامل */
+:root{color-scheme:light dark;
+--bg:light-dark(#F8F5EF,#0D0F12);--card:light-dark(#FFFFFF,#16191D);--ink:light-dark(#15171A,#F2EDE4);
+--mute:light-dark(#66625B,#A49D92);--line:light-dark(#E8E0D0,#2A2E33);--soft:light-dark(#F1EBDF,#1F2327);
+--gold:#B8893A;--gold-d:light-dark(#7C5820,#E2C07A);--char:#111417;--goldg:linear-gradient(135deg,#EBCB86,#B8893A 55%,#8A6224);
+--ok:light-dark(#2F7D57,#6FC79A);--bad:light-dark(#B3412F,#F08B79);--warn:light-dark(#9A6B12,#E9BF64)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 "IBM Plex Sans Arabic",Tahoma,sans-serif;overflow-x:clip}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3{line-height:1.2;margin:0;text-wrap:balance}
+h1{font-size:clamp(26px,3vw,34px)}h2{font-size:22px}h3{font-size:17px}
+.num{font-variant-numeric:tabular-nums;white-space:nowrap;direction:ltr;unicode-bidi:isolate}
+.mute{color:var(--mute)}.small{font-size:13.5px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 18px;border-radius:10px;border:1px solid var(--line);background:var(--card);cursor:pointer;font-weight:600;white-space:nowrap}
+.btn:hover{border-color:var(--gold)}
+.btn.pri{background:var(--char);color:#F6F2EA;border-color:var(--char)}
+:root[data-theme=dark] .btn.pri,.btn.gold{background:var(--gold);color:#1b1b1b;border-color:var(--gold)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]) .btn.pri{background:var(--gold);color:#1b1b1b;border-color:var(--gold)}}
+.btn.danger{color:var(--bad)}.btn.sm{min-height:36px;padding:0 12px;font-size:14px}
+.btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.nav button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+input,select,textarea{width:100%;min-height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);font-size:16px}
+textarea{min-height:90px;resize:vertical}
+label{display:block;font-size:14px;font-weight:600;margin-bottom:4px}
+.req::after{content:" *";color:var(--bad)}
+.hint{font-size:13px;color:var(--gold-d);min-height:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.between{justify-content:space-between}
+.tag{display:inline-block;padding:2px 10px;border-radius:99px;font-size:13px;font-weight:600;background:var(--soft);white-space:nowrap}
+.t-ok{color:var(--ok)}.t-bad{color:var(--bad)}.t-warn{color:var(--warn)}.t-gold{color:var(--gold-d)}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th{font-size:13px;color:var(--mute);font-weight:600;text-align:start;padding:8px 10px;border-bottom:1px solid var(--line)}
+td{padding:10px;border-bottom:1px solid var(--line);vertical-align:middle}
+td.n,th.n{text-align:left}
+tr.click{cursor:pointer}tr.click:hover td{background:var(--soft)}
+.scroll{overflow-x:auto}
+/* admin shell */
+.shell{display:grid;grid-template-columns:250px minmax(0,1fr);min-height:100vh}
+.side{background:var(--char);color:#EDE6DA;padding:22px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:18px}
+.brand{display:flex;align-items:center;gap:10px;padding:0 8px}
+.brand img{height:44px}
+.brand b{font-size:17px;display:block}.brand span{font-size:12.5px;color:#B9AEA0}
+.nav{display:flex;flex-direction:column;gap:4px}
+.nav button{all:unset;cursor:pointer;padding:11px 14px;border-radius:10px;font-weight:500;display:flex;justify-content:space-between;align-items:center}
+.nav button:hover{background:#ffffff12}
+.nav button.on{background:var(--gold);color:#1b1b1b;font-weight:700}
+.side .foot{margin-top:auto;font-size:12.5px;color:#B9AEA0;padding:0 8px}
+.main{padding:clamp(18px,3vw,36px);display:flex;flex-direction:column;gap:20px;max-width:1300px;width:100%}
+.kpi b{display:block;font-size:clamp(20px,2.4vw,28px);font-weight:700}
+.kpi>span{font-size:14px;color:var(--mute)}
+.filters{display:grid;grid-template-columns:2fr repeat(3,minmax(0,1fr));gap:10px}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.pc{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;transition:transform .2s}
+.pc:hover{transform:translateY(-3px);border-color:var(--gold)}
+.ph{aspect-ratio:4/3;background:var(--soft);position:relative;display:grid;place-items:center;overflow:hidden}
+.ph img.cover{width:100%;height:100%;object-fit:cover}
+.ph img.tw{height:46%;opacity:.35}
+.ph .badge{position:absolute;top:12px;inset-inline-start:12px}
+.sold-ribbon{position:absolute;inset:auto 0 0 0;background:#2B2F33E6;color:#F3D9A9;text-align:center;font-weight:700;padding:8px;font-size:17px}
+.pc .bd{padding:14px 16px;display:flex;flex-direction:column;gap:6px;flex:1}
+.pc .price{font-size:19px;font-weight:700;color:var(--gold-d)}
+.specs{display:flex;gap:12px;flex-wrap:wrap;font-size:14px;color:var(--mute)}
+.empty{padding:40px;text-align:center;color:var(--mute)}
+/* modal */
+.ov{position:fixed;inset:0;background:#0009;display:flex;align-items:flex-start;justify-content:center;padding:4vh 12px;overflow-y:auto;z-index:50}
+.md{background:var(--card);border-radius:18px;width:min(860px,100%);padding:22px;display:flex;flex-direction:column;gap:16px;border:1px solid var(--line)}
+.md.narrow{width:min(520px,100%)}
+.md header{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.md fieldset{border:1px solid var(--line);border-radius:14px;padding:14px;margin:0;display:grid;gap:12px}
+.md legend{font-weight:700;padding:0 6px;color:var(--gold-d)}
+.x{all:unset;cursor:pointer;width:40px;height:40px;display:grid;place-items:center;border-radius:10px;font-size:22px}
+.x:hover{background:var(--soft)}
+.thumbs{display:flex;gap:8px;flex-wrap:wrap}
+.thumbs .t{position:relative;width:92px;height:70px;border-radius:8px;overflow:hidden;border:1px solid var(--line)}
+.thumbs .t img{width:100%;height:100%;object-fit:cover}
+.thumbs .t button{position:absolute;top:2px;left:2px;width:24px;height:24px;border-radius:6px;border:0;background:#000a;color:#fff;cursor:pointer}
+.gal{display:grid;gap:8px}
+.gal .big{aspect-ratio:16/10;border-radius:14px;overflow:hidden;background:var(--soft);display:grid;place-items:center}
+.gal .big img{width:100%;height:100%;object-fit:cover}
+.gal .thumbs .t{cursor:pointer}
+.calc{background:var(--soft);border-radius:12px;padding:12px 14px;display:grid;gap:6px}
+.calc div{display:flex;justify-content:space-between;gap:10px}
+.calc .tot{border-top:1px solid var(--line);padding-top:6px;font-weight:700}
+.share{display:grid;grid-template-columns:2fr 1.2fr 1.2fr 1.3fr 44px;gap:8px;align-items:end}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--char);color:#fff;padding:12px 20px;border-radius:12px;z-index:90;font-weight:600}
+.switch{position:fixed;bottom:16px;left:16px;z-index:40;display:flex;background:var(--char);border-radius:99px;padding:4px;box-shadow:0 6px 20px #0003}
+.switch a{color:#EDE6DA;text-decoration:none;padding:8px 14px;border-radius:99px;font-size:14px;font-weight:600}
+.switch a.on{background:var(--gold);color:#1b1b1b}
+.note{border:1px dashed var(--gold);border-radius:12px;padding:12px 14px;font-size:14.5px}
+/* store */
+.st-top{display:flex;justify-content:space-between;align-items:center;padding:14px max(5vw,16px);background:var(--card);border-bottom:1px solid var(--line);gap:12px;flex-wrap:wrap}
+.st-top img{height:54px}
+.hero{background:var(--char);color:#F3EDE3;padding:clamp(30px,5vw,64px) max(5vw,16px);display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:24px;align-items:center;position:relative;overflow:hidden}
+.hero h1{font-size:clamp(30px,4.4vw,50px);line-height:1.1;color:#F3D9A9}
+.hero p{max-width:52ch;color:#D8D0C3;font-size:17px}
+.hero .tower{justify-self:center;height:clamp(140px,22vw,260px);filter:drop-shadow(0 20px 30px #0006)}
+.hero .stats{display:flex;gap:28px;margin-top:18px;flex-wrap:wrap}
+.hero .stats b{display:block;font-size:28px;color:#fff}
+.hero .stats span{font-size:14px;color:#B9AEA0}
+.band{padding:clamp(24px,4vw,48px) max(5vw,16px);max-width:1340px;margin:0 auto}
+.st-foot{background:var(--char);color:#D8D0C3;padding:28px max(5vw,16px);text-align:center;font-size:14.5px}
+@media(max-width:900px){
+ .shell{grid-template-columns:minmax(0,1fr)}
+ .side{position:sticky;height:auto;flex-direction:row;align-items:center;padding:10px 12px;z-index:30;gap:10px}
+ .side .foot,.brand div{display:none}
+ .nav{flex-direction:row;overflow-x:auto}
+ .nav button{white-space:nowrap;padding:9px 12px}
+ .g4{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .filters{grid-template-columns:1fr 1fr}
+ .hero{grid-template-columns:1fr}.hero .tower{display:none}
+}
+@media(max-width:600px){
+ .g2,.g3{grid-template-columns:minmax(0,1fr)}
+ .filters{grid-template-columns:1fr}
+ .share{grid-template-columns:1fr 1fr}.share>:first-child{grid-column:1/-1}
+ table{font-size:13px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:8em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:7.5em;margin-inline-start:-8em;color:var(--mute)}.stack td:empty{display:none}
+}
+@media(prefers-reduced-motion:reduce){.pc{transition:none}.pc:hover{transform:none}}
+
+.brand .blogo{width:100%;max-width:190px;height:auto;max-height:84px;object-fit:contain;filter:drop-shadow(0 4px 10px #0008)}.brand .bsub{font-size:12.5px;color:#B9AEA0;letter-spacing:.3px}.brand{display:grid!important;justify-items:center;gap:4px}
+@media(max-width:900px){.brand .blogo{max-height:40px;max-width:110px}.brand .bsub{display:none}}
+a.btn{text-decoration:none}a.btn:not(.gold):not(.pri){color:var(--ink)}
+/* store v2: depth */
+.tk{display:flex;align-items:stretch;background:#0B0D10;color:#F2EDE4;border-bottom:1px solid #E2C07A33;overflow:hidden;position:relative;z-index:6}
+.tk-lbl{flex:none;display:grid;place-items:center;padding:0 16px;background:var(--goldg);color:#17130B;font-weight:800;font-size:14px;z-index:2;box-shadow:-10px 0 24px #000a}
+.tk-vp{flex:1;overflow:hidden;direction:ltr;mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent)}
+.tk-tr{display:flex;width:max-content;animation:tick linear infinite}.tk-vp:hover .tk-tr,.tk-vp:focus-within .tk-tr{animation-play-state:paused}
+.tk-h{display:flex}
+@keyframes tick{to{transform:translateX(-50%)}}
+.tk-i{direction:rtl;display:flex;align-items:center;gap:10px;padding:8px 18px;border:0;border-inline-end:1px solid #ffffff14;background:none;color:inherit;cursor:pointer;white-space:nowrap;font-size:14px}
+.tk-i img{width:46px;height:34px;border-radius:6px;object-fit:cover;box-shadow:0 4px 10px #0008}.tk-i img.tw{object-fit:contain;background:#1b1e22;padding:3px}
+.tk-i b{font-weight:700}.tk-p{color:#E2C07A;font-weight:700}.tk-m{color:#A49D92;font-size:13px}
+.tk-star{font-size:11px;font-weight:800;color:#17130B;background:#E2C07A;border-radius:99px;padding:1px 8px}
+.st-top{position:sticky;top:0;z-index:5;backdrop-filter:blur(14px) saturate(1.4);-webkit-backdrop-filter:blur(14px) saturate(1.4);background:color-mix(in srgb,var(--card) 82%,transparent)}
+.st-top .row{gap:8px}
+.hero{background:radial-gradient(ellipse at 85% -10%,#B8893A55,transparent 55%),radial-gradient(ellipse at -10% 110%,#B8893A30,transparent 50%),linear-gradient(160deg,#171B20,#0A0C0F 70%);padding-bottom:clamp(70px,8vw,110px);isolation:isolate}
+.hero::after{content:"";position:absolute;inset:auto -30% -45% -30%;height:75%;background:linear-gradient(#E2C07A26 1px,transparent 1px) 0 0/64px 64px,linear-gradient(90deg,#E2C07A26 1px,transparent 1px) 0 0/64px 64px;transform:perspective(520px) rotateX(64deg);mask-image:linear-gradient(transparent,#000 65%);pointer-events:none;z-index:-1}
+.hero h1{background:linear-gradient(90deg,#F7E3B2,#D4A955);-webkit-background-clip:text;background-clip:text;color:transparent;padding-bottom:4px}
+.hero .stats>div{background:#ffffff0d;border:1px solid #ffffff1c;border-radius:14px;padding:10px 18px;backdrop-filter:blur(6px);box-shadow:inset 0 1px 0 #ffffff1a}
+.h3d{perspective:1400px;position:relative;height:clamp(240px,28vw,360px);transform-style:preserve-3d}
+.h3d .tower{position:absolute;inset:0;margin:auto;height:90%;animation:fl 6s ease-in-out infinite;filter:drop-shadow(0 30px 40px #000c)}
+.hc{position:absolute;width:64%;aspect-ratio:4/3;border-radius:18px;overflow:hidden;border:1px solid #ffffff2a;padding:0;cursor:pointer;background:#111;box-shadow:0 40px 70px -20px #000d,0 0 0 1px #E2C07A33;transition:transform .5s cubic-bezier(.2,.7,.2,1),filter .4s;animation:fl 7s ease-in-out infinite}
+.hc img{width:100%;height:100%;object-fit:cover;display:block}
+.hc span{position:absolute;inset:auto 0 0 0;padding:26px 14px 10px;background:linear-gradient(transparent,#000d);color:#fff;text-align:start;display:grid;font-size:14px}.hc span b{font-size:15px}.hc .num{color:#E2C07A;font-weight:700}
+.hc0{inset-inline-start:2%;top:20%;z-index:3;transform:rotateY(-20deg) rotateX(5deg) translateZ(80px)}
+.hc1{inset-inline-start:24%;top:7%;z-index:2;transform:rotateY(-20deg) rotateX(5deg) translateZ(0);filter:brightness(.72);animation-delay:-2s}
+.hc2{inset-inline-start:44%;top:-5%;z-index:1;transform:rotateY(-20deg) rotateX(5deg) translateZ(-90px);filter:brightness(.5);animation-delay:-4s}
+.h3d:hover .hc{filter:brightness(.6)}.h3d .hc:hover{filter:none;transform:rotateY(-8deg) rotateX(2deg) translateZ(120px);z-index:4}
+@keyframes fl{50%{translate:0 -12px}}
+.sbox{max-width:1180px;margin:-52px auto 0;position:relative;z-index:4;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:12px;display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,1fr) minmax(0,1.5fr);gap:10px;box-shadow:0 30px 60px -28px #000a,0 1px 0 #fff3 inset}
+.seg{display:flex;background:var(--soft);border-radius:12px;padding:4px;gap:2px}
+.seg button{border:0;background:none;min-height:40px;padding:0 18px;border-radius:9px;font-weight:700;cursor:pointer;color:var(--mute);white-space:nowrap}
+.seg button.on{background:var(--char);color:#F7E3B2;box-shadow:0 6px 14px -6px #000a}
+:root[data-theme=dark] .seg button.on{background:var(--gold);color:#17130B}
+.sec-h{display:flex;justify-content:space-between;align-items:end;gap:12px;margin:34px 0 16px}.sec-h h2{font-size:clamp(22px,2.4vw,28px)}
+.pc{position:relative}
+.pc.tilt{transform-style:preserve-3d;transition:transform .35s cubic-bezier(.2,.7,.2,1),box-shadow .35s;box-shadow:0 18px 40px -26px #0007;will-change:transform}
+.pc.tilt:hover{transform:translateY(-4px)}
+.pc.tilt.tilting{transition:transform .08s linear,box-shadow .2s;box-shadow:0 34px 60px -26px #000a;border-color:var(--gold)}
+.pc.tilt::after{content:"";position:absolute;inset:0;border-radius:inherit;background:radial-gradient(circle at var(--gx,50%) var(--gy,0%),#ffffff33,transparent 45%);opacity:0;transition:opacity .25s;pointer-events:none}
+.pc.tilt.tilting::after{opacity:1}
+.pc.tilt .ph img.cover{transition:transform .6s}.pc.tilt:hover .ph img.cover{transform:scale(1.06)}
+.fstar{position:absolute;top:12px;inset-inline-end:12px;background:var(--goldg);color:#17130B;font-weight:800;font-size:12.5px;padding:3px 10px;border-radius:99px;box-shadow:0 6px 14px -4px #0009}
+.pcode{font-size:12px;color:var(--mute)}
+.st-foot{background:#0B0D10;display:grid;gap:6px}.st-foot b{color:#E2C07A}
+@media(max-width:900px){.sbox{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.sbox .seg{grid-column:1/-1}.sbox #sq{grid-column:1/-1}.h3d{height:260px}}
+@media(max-width:900px){.hero{padding:26px 18px 64px;gap:0}.hero .h3d{display:none}}
+@media(max-width:600px){.hero h1{font-size:26px;padding-bottom:2px}.hero p{font-size:15px;line-height:1.7;margin:8px 0 0}.hero .stats{gap:8px;margin-top:14px;flex-wrap:nowrap}.hero .stats>div{flex:1;padding:8px 10px;border-radius:12px;text-align:center}.hero .stats b{font-size:20px}.hero .stats span{font-size:12.5px}.sbox{margin-top:-40px}}
+@media(max-width:600px){.hc{width:78%}.tk-m{display:none}.st-top{flex-wrap:nowrap;padding:8px 12px}.st-top img{height:36px}.st-top .btn{min-height:38px;padding:0 12px;font-size:14px}.st-top .btn .num,.st-top .btn .lbl-n{display:none}}
+@media(prefers-reduced-motion:reduce){.tk-tr{animation:none}.tk-vp{overflow-x:auto}.hc,.h3d .tower{animation:none}.pc.tilt,.pc.tilt.tilting{transform:none!important}}
+/* contract editor */
+.ce-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;position:sticky;top:0;z-index:6;background:var(--bg);padding:8px 0}
+.seg.big button{min-height:46px;font-size:16px;padding:0 22px}
+.ce{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:18px;align-items:start}
+.ce-form fieldset{border:1px solid var(--line);border-radius:14px;padding:14px;margin:0;display:grid;gap:12px;background:var(--card)}
+.ce-form legend{font-weight:700;padding:0 6px;color:var(--gold-d)}
+.ce-pick{background:var(--soft);border-radius:14px;padding:14px;display:grid;gap:10px;border:1px dashed var(--gold)}
+.ce-pv{position:sticky;top:70px}.ce-pvh{margin-bottom:6px}
+.ce-sheet{border-radius:6px;overflow:hidden;box-shadow:0 20px 50px -20px #0008;background:#fff}
+.ce-sheet .ct{box-shadow:none;margin:0}
+@media(max-width:1100px){.ce{grid-template-columns:minmax(0,1fr)}.ce-pv{position:static}}
+#print.sil{display:none}
+/* stats */
+.bars{display:flex;align-items:end;gap:3px;height:150px;padding-top:8px}
+.bars div{flex:1;background:var(--gold);border-radius:4px 4px 0 0;min-height:2px;position:relative}
+.bars div:hover{background:var(--gold-d)}
+.hbar{height:7px;background:var(--soft);border-radius:4px;margin-top:4px}.hbar i{display:block;height:100%;background:var(--gold);border-radius:4px}
+
+/* featured stage: 10 modes */
+.feat{padding:22px max(4vw,14px) 10px;max-width:1400px;margin:0 auto;overflow:hidden}
+.fs{position:relative;height:clamp(250px,40vw,470px);perspective:1500px;transform-style:preserve-3d;--sp:5s;touch-action:pan-y;user-select:none}
+.fsl{position:absolute;inset:0;margin:auto;border-radius:24px;overflow:hidden;background:#111;cursor:pointer;opacity:0;pointer-events:none;transition:transform .9s cubic-bezier(.22,.7,.18,1),opacity .9s,filter .9s;backface-visibility:hidden;box-shadow:0 30px 60px -30px #000c;z-index:calc(5 - var(--a,3))}
+.fsl[data-o="0"]{opacity:1;pointer-events:auto}
+.fsi,.fsi img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.fsi img.tw{object-fit:contain;padding:12%;background:#1b1e22}
+.fsl::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,#000d 0%,#0006 38%,transparent 65%);pointer-events:none}
+.fsc{position:absolute;inset:auto 0 0 0;z-index:2;padding:clamp(16px,3vw,34px) clamp(16px,3vw,34px) clamp(30px,3.4vw,44px);padding-inline:clamp(16px,6vw,78px);color:#fff;display:grid;gap:4px;justify-items:start}
+.fsc h3{font-size:clamp(20px,2.8vw,34px);line-height:1.2}.fsm{color:#E9E2D6;font-size:14.5px}.fsp{font-size:clamp(20px,2.4vw,28px);color:#F2D08A}.fsc .btn{margin-top:6px;pointer-events:none}
+.fsb{background:var(--goldg);color:#17130B;font-weight:800;font-size:12.5px;padding:3px 12px;border-radius:99px}
+.fsn{position:absolute;top:50%;translate:0 -50%;z-index:9;width:44px;height:44px;border-radius:50%;border:1px solid #ffffff55;background:#0008;color:#fff;font-size:26px;line-height:1;cursor:pointer;backdrop-filter:blur(6px)}
+.fsn.prev{inset-inline-start:12px}.fsn.next{inset-inline-end:12px}.fsn:hover{background:var(--gold);color:#17130B}
+.fsd{position:absolute;inset:auto 0 14px 0;display:flex;justify-content:center;gap:7px;z-index:9}
+.fsd button{width:8px;height:8px;border-radius:99px;border:0;padding:0;background:#ffffff70;cursor:pointer;transition:width .4s,background .4s}.fsd button.on{width:26px;background:var(--gold)}
+
+/* 1 tamata: rounded banners, next one peeking */
+.fs[data-mode=tamata] .fsl{width:86%;opacity:1;pointer-events:auto;transform:translateX(calc(var(--o)*-91%)) scale(calc(1 - var(--a)*.08));filter:brightness(calc(1 - var(--a)*.3))}
+.fs[data-mode=tamata] .fsl[data-o=far]{opacity:0}
+.fs[data-mode=tamata]{overflow:hidden;border-radius:24px}
+/* 2 slide */
+.fs[data-mode=slide]{overflow:hidden;border-radius:24px}.fs[data-mode=slide] .fsl{opacity:1;transform:translateX(calc(var(--o)*-101%))}
+/* 3 fade */
+.fs[data-mode=fade] .fsl{transition:opacity 1.2s ease}
+/* 4 ken burns */
+.fs[data-mode=kenburns] .fsl{transition:opacity 1.4s ease}.fs[data-mode=kenburns] .fsl[data-o="0"] .fsi img{animation:kb calc(var(--sp) + 1.4s) ease-out forwards}
+@keyframes kb{from{transform:scale(1) translate(0,0)}to{transform:scale(1.16) translate(-2%,-2%)}}
+/* 5 coverflow */
+.fs[data-mode=coverflow] .fsl{width:58%;opacity:calc(1 - var(--a)*.25);pointer-events:auto;transform:translateX(calc(var(--o)*-58%)) translateZ(calc(var(--a)*-220px)) rotateY(calc(var(--o)*42deg));filter:brightness(calc(1 - var(--a)*.28))}
+.fs[data-mode=coverflow] .fsl[data-o=far]{opacity:0;pointer-events:none}
+/* 6 cube */
+.fs[data-mode=cube]{perspective:1800px}.fs[data-mode=cube] .fsl{width:78%;transform:translateZ(calc(var(--hw)*-.78)) rotateY(calc(var(--o)*90deg)) translateZ(calc(var(--hw)*.78));transition:transform 1.1s cubic-bezier(.6,0,.3,1),opacity 1.1s}
+.fs[data-mode=cube] .fsl[data-o="1"],.fs[data-mode=cube] .fsl[data-o="-1"]{opacity:1}
+/* 7 stacked cards */
+.fs[data-mode=stack] .fsl{width:84%;transform:translateY(calc(var(--a)*-22px)) scale(calc(1 - var(--a)*.07));opacity:calc(1 - var(--a)*.25);filter:brightness(calc(1 - var(--a)*.25))}
+.fs[data-mode=stack] .fsl[data-o^="-"]{opacity:0;transform:translateX(-120%) rotate(-8deg)}.fs[data-mode=stack] .fsl[data-o=far]{opacity:0}
+/* 8 flip */
+.fs[data-mode=flip] .fsl{width:84%;transform:rotateX(calc(var(--o)*-100deg));transform-origin:50% 50%;transition:transform 1s cubic-bezier(.5,0,.3,1),opacity .5s}
+/* 9 3D ring */
+.fs[data-mode=ring]{perspective:2000px}.fs[data-mode=ring] .fsl{width:50%;opacity:calc(1 - var(--a)*.3);pointer-events:auto;transform:translateZ(calc(var(--R)*-1)) rotateY(calc(var(--o)*-42deg)) translateZ(var(--R));filter:brightness(calc(1 - var(--a)*.3))}
+.fs[data-mode=ring] .fsl[data-o=far]{opacity:0;pointer-events:none}
+@media(max-width:700px){.fs[data-mode=coverflow] .fsl,.fs[data-mode=ring] .fsl{width:72%}.fsn{display:none}.fsc .btn{display:none}}
+@media(prefers-reduced-motion:reduce){.fsl{transition:opacity .3s!important}.fs[data-mode=kenburns] .fsl .fsi img{animation:none!important}}
+.st-nav{display:flex;gap:4px}.st-nav button{border:0;background:none;font-weight:600;padding:8px 12px;border-radius:10px;cursor:pointer;color:var(--ink)}.st-nav button:hover{background:var(--soft)}
+@media(max-width:900px){.st-nav{display:none}}
+/* about / contact / location */
+.info{background:linear-gradient(180deg,transparent,var(--soft))}
+.abt{display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:center;font-size:17px;line-height:1.9}.abt img{height:110px;opacity:.9}.abt p{margin:0}
+.ccard{display:grid;gap:12px;align-content:start}
+.cbig{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:14px;background:var(--char);color:#F2EDE4;text-decoration:none;transition:transform .2s}
+.cbig:hover{transform:translateY(-2px)}.cbig svg{width:30px;height:30px;flex:none;color:#E2C07A}.cbig span{display:grid}.cbig b{font-size:17px}.cbig span span{font-size:14px;color:#BDB5A8}
+.cbig.wa{background:#1F7A4D}.cbig.wa svg{color:#fff}.cbig.wa span span{color:#D3F0E0}
+.soc{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.soc a{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--card);border:1px solid var(--line);color:var(--ink);transition:transform .2s,background .2s}
+.soc a:hover{transform:translateY(-3px);box-shadow:0 10px 18px -8px #0007}
+.soc a.s-facebook{background:#1877F2;border-color:#1877F2;color:#fff}
+.soc a.s-instagram{background:radial-gradient(circle at 30% 107%,#fdf497 0%,#fdf497 5%,#fd5949 45%,#d6249f 60%,#285AEB 90%);border-color:transparent;color:#fff}
+.soc a.s-tiktok{background:#010101;border-color:#010101;color:#fff}.soc a.s-tiktok svg{filter:drop-shadow(-1.4px -1.2px 0 #25F4EE) drop-shadow(1.4px 1.2px 0 #FE2C55)}
+.soc a.s-maps{background:#fff;border-color:#dadce0;color:#EA4335}.soc svg{width:22px;height:22px}
+.st-foot .soc{justify-content:center}.st-foot .soc a{background:#ffffff10;border-color:#ffffff22;color:#F2EDE4}
+.mapph{display:grid;place-items:center;align-content:center;gap:6px;height:220px;border-radius:14px;background:radial-gradient(circle at 50% 40%,color-mix(in srgb,var(--gold) 22%,var(--soft)),var(--soft));color:var(--ink);text-decoration:none;border:1px dashed var(--gold)}.mapph svg{width:44px;height:44px;color:var(--gold)}.mapph span{color:var(--mute);font-size:14px}
+.mapf{width:100%;height:260px;border:0;border-radius:14px;background:var(--soft)}
+.mappv{display:grid;gap:8px}.mappv .mapf{height:200px}
+.btn svg{width:18px;height:18px}
+/* fixed side contact */
+.cta-side{position:fixed;left:0;top:42%;translate:0 -50%;z-index:45;display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 9px;border:0;border-radius:0 14px 14px 0;background:#1F7A4D;color:#fff;cursor:pointer;box-shadow:6px 8px 24px -8px #0009;font-weight:700;font-size:15px}
+.cta-side svg{width:26px;height:26px}.cta-side span{writing-mode:vertical-rl;letter-spacing:.5px}
+.cta-side:hover{padding-left:14px}
+.cpanel{position:fixed;left:58px;top:42%;translate:-12px -50%;z-index:46;width:min(300px,calc(100vw - 76px));background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;display:grid;gap:10px;box-shadow:0 30px 60px -20px #000b;opacity:0;visibility:hidden;transition:opacity .25s,translate .25s,visibility .25s}
+.cpanel.open{opacity:1;visibility:visible;translate:0 -50%}
+@media(max-width:700px){.cta-side{top:auto;bottom:96px;translate:none;padding:10px 7px;font-size:13px}.cta-side svg{width:22px;height:22px}.cpanel{top:auto;bottom:80px;translate:-12px 0}.cpanel.open{translate:0 0}}
+
+.remind{border:1.5px solid var(--warn);background:linear-gradient(180deg,color-mix(in srgb,var(--warn) 9%,var(--card)),var(--card))}
+.rlist{display:grid;gap:8px;margin-top:10px}
+.ritem{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:12px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+.rdays{color:var(--warn);font-size:14px;white-space:nowrap}.rdays b{font-size:20px}
+.nbadge{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;border-radius:99px;background:var(--warn);color:#fff;font-size:12px;font-weight:800;margin-inline-start:6px}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:99px;min-height:44px;padding:0 16px;font-weight:600;cursor:pointer;white-space:nowrap}.chip.on{background:var(--warn);border-color:var(--warn);color:#fff}.filters .chip{justify-self:start}
+.stag{position:absolute;bottom:10px;inset-inline-start:10px;background:var(--warn);color:#fff;font-size:12px;font-weight:700;padding:3px 9px;border-radius:99px;box-shadow:0 4px 10px -4px #0008}
+@media(max-width:600px){.ritem{grid-template-columns:minmax(0,1fr) auto}.ritem .row{grid-column:1/-1}}
+/* contracts print */
+#print{position:fixed;inset:0;z-index:80;background:#6f6a64;overflow:auto;padding:16px 10px 40px}
+#print .bar{position:sticky;top:0;display:flex;gap:8px;justify-content:center;margin-bottom:14px;z-index:2}
+.ct-wrap{overflow-x:auto}
+.ct{background:#fff;color:#151515;width:210mm;min-height:297mm;margin:0 auto;padding:9mm 12mm;font:11pt/1.68 "IBM Plex Sans Arabic",Tahoma,sans-serif;box-shadow:0 6px 30px #0006;display:flex;flex-direction:column;gap:2mm}
+.ct .num{direction:ltr;unicode-bidi:isolate}
+.ct-h{display:flex;justify-content:space-between;align-items:center;gap:6mm;border:1.5px solid #2B2F33;border-radius:4mm;padding:2mm 5mm}
+.ct-of{display:grid;gap:.5mm}.ct-of b{font-size:19pt;color:#2B2F33;line-height:1.3}.ct-of span{font-size:10.5pt;font-weight:600;color:#5a4a30}
+.ct-lg{display:grid;justify-items:center;gap:1mm;text-align:center}.ct-lg img{height:15mm;max-width:52mm;object-fit:contain}.ct-lg span{font-size:9.5pt;background:#2B2F33;color:#fff;padding:.5mm 3mm;border-radius:2mm}
+.ct-p div,.ct-c p{margin:0}
+.ct-bar{display:flex;align-items:center;justify-content:center;gap:6mm;position:relative;min-height:9mm}
+.ct-no{position:absolute;inset-inline-end:0;font-size:15pt;font-weight:700;letter-spacing:1px;color:#2B2F33}
+.ct-t{background:#2B2F33;color:#fff;font-weight:700;padding:1mm 6mm;border-radius:2mm;font-size:11.5pt}.ct-t.big{font-size:17pt;padding:.5mm 12mm;background:#3d3a78}.ct-t.big.sale{background:#7C5820}
+.ct-c{margin:0;padding:0;list-style:none;display:grid;gap:1.2mm;text-align:start}
+.fl{display:inline-block;border-bottom:1px dotted #777;padding:0 1.5mm;font-weight:600;color:#000;line-height:1.5}.fl.e{height:1.1em;vertical-align:baseline}
+.mute-p{font-size:10pt;color:#444}
+.ct-d{margin:0;font-weight:600}
+.ct-two{display:flex;gap:5mm;align-items:center}.ct-n{flex:1;margin:0;padding-inline-start:6mm;font-weight:600;font-size:10.5pt}
+.ct-note{border:2px solid #b3262b;color:#b3262b;font-weight:700;padding:1.5mm 4mm;border-radius:2mm;white-space:nowrap}
+.ct-x{margin:1mm 0 0;text-align:center;text-decoration:underline;font-size:11.5pt}.ct-ex{margin:0;padding-inline-start:6mm}
+.ct-sig{width:100%;border-collapse:collapse;margin-top:auto;table-layout:fixed}.ct-sig td{border:1.2px solid #2B2F33;padding:2mm 3mm;height:23mm;vertical-align:top;font-size:10.5pt}.ct-sig b{display:block;text-align:center;margin-bottom:1mm}
+body.printing{overflow:hidden}
+@media print{@page{size:A4;margin:0}
+ #print.sil{display:block}
+ body,body.printing{background:#fff;overflow:visible}
+ body>*:not(#print){display:none!important}
+ #print{position:static;padding:0;background:#fff;overflow:visible}#print .bar{display:none}.ct-wrap{overflow:visible}
+ .ct{box-shadow:none;margin:0;width:210mm;height:297mm;min-height:0;overflow:hidden;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style>
+<script>new MutationObserver(()=>{for(const c of document.querySelectorAll('.stack td:not([data-l])')){let i=0,p=c;while(p=p.previousElementSibling)i+=p.colSpan;c.dataset.l=c.closest('table').rows[0].cells[i]?.textContent||''}}).observe(document,{childList:true,subtree:true})</script>
+</head>
+<body>
+<div id="app"><div class="empty">جاري التحميل…</div></div>
+<div id="modal"></div>
+<script>
+{
+const LOGO="data:image/png;base64,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";
+const TOWER="data:image/png;base64,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";
+const $=(s,r=document)=>r.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=n=>Math.round(+n||0).toLocaleString('en-US');
+const IQD=n=>`<span class="num">${fmt(n)}</span> د.ع`;
+const ymd=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const today=()=>ymd(new Date());
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const num=v=>{const x=parseFloat(String(v??'').replace(/,/g,''));return isFinite(x)?x:0};
+
+const TYPES=['شقة','فيلا / دار','أرض','محل تجاري','مكتب','بناية'];
+const PURPOSES=['بيع','إيجار'];
+const OWN={broker:'وساطة (عمولة للمكتب)',invest:'استثمار (ملك المكتب والشركاء)'};
+const STATUS=['متاح','محجوز','مباع','مؤجر'];
+const GOVS=['ميسان','بغداد','البصرة','ذي قار','واسط','القادسية','المثنى','بابل','كربلاء','النجف','ديالى','صلاح الدين','الأنبار','نينوى','كركوك','أربيل','السليمانية','دهوك'];
+const FURN=['غير مؤثث','نصف مؤثث','مؤثث بالكامل'];
+const CTYPES=['مشتري','بائع','مستأجر','مؤجر','مستثمر'];
+const CSTAT=['محتمل','نشط','مغلق'];
+const KINDS={
+ inc_office:{t:'إيراد عام للمكتب',s:1,scope:'office'},
+ exp_office:{t:'مصروف عام للمكتب',s:-1,scope:'office'},
+ exp_property:{t:'مصروف خاص على عقار',s:-1,scope:'property'},
+ inc_partner:{t:'إيراد خاص لشريك',s:1,scope:'partner'},
+ exp_partner:{t:'مصروف خاص على شريك',s:-1,scope:'partner'},
+ capital_in:{t:'إضافة رأس مال (شريك)',s:1,scope:'partner'},
+ withdraw:{t:'سحب (شريك)',s:-1,scope:'partner'}};
+const DEF_SET={officeName:'مكتب معراج للعقار',phone:'',whatsapp:'',ctTag:'لبيع وشراء الدور والأراضي السكنية والزراعية',ctMgr:'صباح فالح',ctPhone:'07753 055 520',ctAddr:'ميسان - قطاع 30 - شارع المدارس السايدين - مقابل مدرسة الأندلس - قرب مدرسة الجواهري',metaPixel:'',gtagId:'',featMode:'tamata',featSpeed:5,about:'مكتب معراج للعقارات — لبيع وشراء الدور والأراضي السكنية والزراعية في ميسان. نعرض العقارات بأسعارها الحقيقية وصورها، ونرافقك من أول زيارة لحد إكمال المعاملة.',tiktok:'',instagram:'',facebook:'',mapsUrl:'',
+ incomeCats:['عمولة بيع','عمولة إيجار','أرباح','أخرى'],
+ expenseCats:['صرفيات','إيجار وأجور خدمة','أجور تنظيف','أجور إعلان','أجور حدل','تصليح وصيانة','أخرى']};
+const COLS=['properties','clients','partners','tx','photos','contracts'];
+const S={properties:[],clients:[],partners:[],tx:[],photos:[],contracts:[],settings:{...DEF_SET}};
+let db=null,loaded=false,offlineNote='',readOnly=false,dbReadyRes;const dbReady=new Promise(r=>dbReadyRes=r);
+const UI={sec:'dash',q:'',ft:'',fp:'',fs:'',fg:'',fk:'',sq:'',st:'',sp:'',sg:''};
+
+/* ---------- data layer ---------- */
+let rq=0;const schedule=()=>{cancelAnimationFrame(rq);rq=requestAnimationFrame(render)};
+function upLocal(c,id,d){const i=S[c].findIndex(x=>x.id===id);if(i<0)S[c].push({id,...d});else S[c][i]={id,...d}}
+async function put(c,id,d){d={...d,updatedAt:Date.now()};
+ if(db){try{await db.collection(c).doc(id).set(d)}catch(e){fail(e);throw e}}else{upLocal(c,id,d);schedule()}}
+async function drop(c,id){if(db){try{await db.collection(c).doc(id).delete()}catch(e){fail(e);throw e}}else{S[c]=S[c].filter(x=>x.id!==id);schedule()}}
+async function putSettings(d){S.settings={...S.settings,...d};if(db){try{await db.doc('config/settings').set(S.settings)}catch(e){fail(e)}}schedule()}
+function fail(e){if(e?.code==='invalid_argument'){readOnly=true;toast('ما عندك صلاحية تعديل البيانات')}else if(e?.code==='quota_exceeded')toast('امتلأت مساحة التخزين، احذف صور قديمة');else toast('تعذر الحفظ، حاول مرة ثانية')}
+(async()=>{
+ try{db=window.claude?.use?await window.claude.use('db'):null}catch(e){db=null}
+ if(!db){dbReadyRes(null);loaded=true;offlineNote='وضع تجريبي: البيانات ما تنحفظ بعد غلق الصفحة.';schedule();return}
+ const timer=setTimeout(()=>{offlineNote='تعذر الوصول للبيانات حالياً، قد تكون غير محدّثة.';loaded=true;schedule()},10000);
+ for(const c of COLS)db.collection(c).onSnapshot(snap=>{S[c]=snap.docs.map(d=>({id:d.id,...d.data()}));if(!snap.metadata.fromCache){clearTimeout(timer);offlineNote='';if(c==='properties')migrateCodes()}loaded=true;schedule()},e=>{clearTimeout(timer);loaded=true;offlineNote='تعذر تحميل جزء من البيانات.';schedule()});
+ db.doc('config/settings').onSnapshot(d=>{S.settings={...DEF_SET,...(d.exists?d.data():{})};if(S.settings.ctAddr==='ميسان / طريق بغداد - قرب جامعة ميسان'){S.settings.ctAddr=DEF_SET.ctAddr;if(!readOnly)db.doc('config/settings').set(S.settings).catch(()=>{})}schedule()},()=>{});
+ dbReadyRes(db);
+})();
+
+/* ---------- derived ---------- */
+const mrNum=c=>{const m=/^MR-?(\d+)$/.exec(c||'');return m?+m[1]:0};
+const mrCode=n=>'MR-'+String(n).padStart(3,'0');
+const nextMR=()=>Math.max(0,...S.properties.map(p=>mrNum(p.code)))+1;
+let migrated=false;
+async function migrateCodes(){if(migrated||!db)return;migrated=true;const old=S.properties.filter(p=>!mrNum(p.code)).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
+ let n=nextMR();for(const p of old){const r={...p,code:mrCode(n++)};delete r.id;try{await put('properties',p.id,r)}catch(e){return}}}
+
+const byId=(c,id)=>S[c].find(x=>x.id===id);
+const photosOf=pid=>S.photos.filter(p=>p.propertyId===pid).sort((a,b)=>(a.order||0)-(b.order||0));
+const propExp=pid=>S.tx.filter(t=>t.kind==='exp_property'&&t.propertyId===pid).reduce((a,t)=>a+num(t.amount),0);
+function partnerBal(pid){const r={cap:0,inc:0,exp:0,wd:0};for(const t of S.tx){if(t.partnerId!==pid)continue;const a=num(t.amount);
+ if(t.kind==='capital_in')r.cap+=a;else if(t.kind==='inc_partner')r.inc+=a;else if(t.kind==='exp_partner')r.exp+=a;else if(t.kind==='withdraw')r.wd+=a}
+ r.bal=r.cap+r.inc-r.exp-r.wd;return r}
+function office(){let inc=0,exp=0,pend=0;for(const t of S.tx){const a=num(t.amount);if(t.kind==='inc_office')inc+=a;else if(t.kind==='exp_office')exp+=a;else if(t.kind==='exp_property'){const p=byId('properties',t.propertyId);if(!p||!p.sale)pend+=a}}return{inc,exp,net:inc-exp,pend}}
+const stTag=s=>`<span class="tag ${s==='متاح'?'t-ok':s==='محجوز'?'t-warn':'t-gold'}">${esc(s)}</span>`;
+const pubLabel=s=>s==='مباع'?'تم البيع':s==='مؤجر'?'تم التأجير':s;
+
+/* ---------- ui helpers ---------- */
+function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.append(t);setTimeout(()=>t.remove(),2600)}
+function openModal(html,narrow){const m=$('#modal');m.innerHTML=`<div class="ov"><div class="md ${narrow?'narrow':''}" role="dialog" aria-modal="true">${html}</div></div>`;
+ const ov=$('.ov',m);ov.addEventListener('mousedown',e=>{if(e.target===ov)closeModal()});ov.querySelectorAll('[data-close]').forEach(b=>b.onclick=closeModal);
+ ov.querySelectorAll('input.money').forEach(moneyHint);const f=ov.querySelector('input,select,textarea');if(f)f.focus();return $('.md',m)}
+function closeModal(){$('#modal').innerHTML=''}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#modal').innerHTML)closeModal()});
+function ask(msg,ok='تأكيد'){return new Promise(res=>{const md=openModal(`<header><h2>تأكيد</h2></header><p>${msg}</p><div class="row"><button class="btn pri" id="y">${ok}</button><button class="btn" id="n">رجوع</button></div>`,true);
+ $('#y',md).onclick=()=>{closeModal();res(true)};$('#n',md).onclick=()=>{closeModal();res(false)}})}
+function moneyHint(i){const h=document.createElement('div');h.className='hint';i.after(h);const u=()=>{h.textContent=i.value?fmt(num(i.value))+' دينار':''};i.addEventListener('input',u);u()}
+const opts=(arr,sel,ph)=>(ph!=null?`<option value="">${ph}</option>`:'')+arr.map(o=>{const [v,t]=Array.isArray(o)?o:[o,o];return`<option value="${esc(v)}" ${String(sel)===String(v)?'selected':''}>${esc(t)}</option>`}).join('');
+const fld=(n,l,v,{type='text',req,ph='',money,cls=''}={})=>`<div class="${cls}"><label for="f_${n}" class="${req?'req':''}">${l}</label><input id="f_${n}" name="${n}" type="${money?'text':type}" ${money?'inputmode="numeric" class="money"':''} value="${esc(v??'')}" placeholder="${esc(ph)}" ${req?'required':''}></div>`;
+const sel=(n,l,arr,v,{req,ph}={})=>`<div><label for="f_${n}" class="${req?'req':''}">${l}</label><select id="f_${n}" name="${n}" ${req?'required':''}>${opts(arr,v,ph)}</select></div>`;
+const formData=f=>Object.fromEntries(new FormData(f).entries());
+function compress(file,max=1100,q=.68){return new Promise((res,rej)=>{const img=new Image(),u=URL.createObjectURL(file);img.onload=()=>{let w=img.width,h=img.height;const k=Math.min(1,max/Math.max(w,h));w=Math.round(w*k);h=Math.round(h*k);const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);let d=c.toDataURL('image/jpeg',q);if(d.length>230000)d=c.toDataURL('image/jpeg',.5);URL.revokeObjectURL(u);res(d)};img.onerror=rej;img.src=u})}
+
+/* ---------- render root ---------- */
+function render(){
+ const view=location.hash==='#store'?'store':'admin';
+ const a=document.activeElement,aid=a?.id,ss=a?.selectionStart;
+ $('#app').innerHTML=(view==='store'?storeView():adminView())+`<nav class="switch" aria-label="التبديل بين الواجهتين"><a href="#admin" class="${view==='admin'?'on':''}">الإدارة</a><a href="#store" class="${view==='store'?'on':''}">واجهة الزبون</a></nav>`;
+ if(aid){const el=document.getElementById(aid);if(el){el.focus();try{if(ss!=null)el.setSelectionRange(ss,ss)}catch(e){}}}
+ fitPv();applyFs();offPv();if(view==='store')storeEnter();else markAdmin();if(UI.sec==='stats'&&view==='admin'&&!UI.vs&&!UI.vsLoading)loadStats();
+}
+addEventListener('hashchange',()=>{scrollTo(0,0);render()});
+
+/* ---------- ADMIN ---------- */
+const SECS=[['dash','لوحة القيادة'],['props','العقارات'],['clients','العملاء'],['partners','الشركاء'],['finance','الحسابات'],['contracts','العقود'],['stats','إحصائيات الزوار'],['settings','الإعدادات']];
+function adminView(){
+ const body=!loaded?'<div class="empty">جاري التحميل…</div>':({dash,props,clients,partners,finance,contracts,ctedit:ctEditor,stats,settings})[UI.sec]();
+ return `<div class="shell"><aside class="side"><div class="brand"><img class="blogo" src="${LOGO}" alt="${esc(S.settings.officeName)}"><span class="bsub">لوحة الإدارة</span></div>
+ <nav class="nav">${SECS.map(([k,t])=>{const n=k==='props'?staleList().length:0;return`<button data-sec="${k}" class="${UI.sec===k||(k==='contracts'&&UI.sec==='ctedit')?'on':''}">${t}${n?`<span class="nbadge" title="عقارات راكدة أكثر من شهر">${n}</span>`:''}</button>`}).join('')}</nav>
+ <div class="foot">النسخة الأولى — جاهزة للربط بقاعدة Supabase</div></aside>
+ <main class="main">${offlineNote?`<div class="note">${offlineNote}</div>`:''}${body}</main></div>`}
+
+function dash(){
+ const P=S.properties,o=office();
+ const avail=P.filter(p=>p.status==='متاح').length,sold=P.filter(p=>p.status==='مباع').length;
+ const pb=S.partners.reduce((a,p)=>a+partnerBal(p.id).bal,0);
+ const months=[];const d=new Date();for(let i=5;i>=0;i--){const m=new Date(d.getFullYear(),d.getMonth()-i,1);months.push(ymd(m).slice(0,7))}
+ const mdat=months.map(m=>{let i=0,e=0;for(const t of S.tx){if(!(t.date||'').startsWith(m))continue;if(t.kind==='inc_office')i+=num(t.amount);if(t.kind==='exp_office')e+=num(t.amount)}return{m,i,e}});
+ const mx=Math.max(1,...mdat.map(x=>Math.max(x.i,x.e)));
+ const MN=['كانون 2','شباط','آذار','نيسان','أيار','حزيران','تموز','آب','أيلول','تشرين 1','تشرين 2','كانون 1'];
+ const recent=[...S.tx].sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(b.updatedAt||0)-(a.updatedAt||0)).slice(0,6);
+ return `<div class="row between"><div><h1>صافي ربح المكتب: ${IQD(o.net)}</h1><p class="mute">الإيرادات العامة ناقص المصروفات العامة، من كل الحركات المسجلة.</p></div>
+ <div class="row"><button class="btn pri" data-act="newProp">إضافة عقار</button><button class="btn" data-act="newTx">تسجيل حركة مالية</button></div></div>
+ ${staleCard()}
+ <div class="grid g4">
+ <div class="card kpi"><span>عقارات متاحة</span><b class="num">${avail}</b><span>من ${P.length} عقار</span></div>
+ <div class="card kpi"><span>عقارات مباعة</span><b class="num">${sold}</b><span>تظهر "تم البيع" للزبون</span></div>
+ <div class="card kpi"><span>إيرادات المكتب العامة</span><b>${IQD(o.inc)}</b><span>مصروفات عامة: ${IQD(o.exp)}</span></div>
+ <div class="card kpi"><span>أرصدة الشركاء</span><b>${IQD(pb)}</b><span>${S.partners.length} شريك</span></div></div>
+ <div class="grid g2"><div class="card"><h3>إيرادات ومصروفات المكتب — آخر 6 أشهر</h3>
+ <div style="display:grid;gap:10px;margin-top:14px">${mdat.map(x=>{const mm=MN[+x.m.slice(5)-1];return`<div><div class="row between small"><span>${mm}</span><span class="mute"><span class="t-ok">${fmt(x.i)}</span> / <span class="t-bad">${fmt(x.e)}</span></span></div>
+ <div style="height:8px;background:var(--soft);border-radius:4px;margin-top:3px"><div style="height:100%;width:${x.i/mx*100}%;background:var(--gold);border-radius:4px"></div></div>
+ <div style="height:5px;background:var(--soft);border-radius:4px;margin-top:2px"><div style="height:100%;width:${x.e/mx*100}%;background:var(--char);border-radius:4px;opacity:.7"></div></div></div>`}).join('')}</div>
+ <p class="small mute" style="margin:10px 0 0">الذهبي: إيرادات · الغامق: مصروفات</p></div>
+ <div class="card"><div class="row between"><h3>آخر الحركات</h3><button class="btn sm" data-sec="finance">كل الحسابات</button></div>
+ ${recent.length?`<table style="margin-top:8px"><tbody>${recent.map(txRow).join('')}</tbody></table>`:'<div class="empty">ماكو حركات بعد</div>'}</div></div>
+ ${o.pend?`<div class="note">مصروفات معلّقة على عقارات غير مباعة: ${IQD(o.pend)} — تنطرح من ربح العقار وقت بيعه.</div>`:''}`}
+
+function txRow(t){const k=KINDS[t.kind]||{t:t.kind,s:1};const p=t.propertyId&&byId('properties',t.propertyId),pr=t.partnerId&&byId('partners',t.partnerId);
+ return `<tr><td><b>${esc(t.category||k.t)}</b><div class="small mute">${k.t}${p?' · '+esc(p.title):''}${pr?' · '+esc(pr.name):''}</div></td><td class="n ${k.s>0?'t-ok':'t-bad'}">${k.s>0?'+':'−'}${IQD(t.amount)}</td></tr>`}
+
+function filteredProps(){const q=UI.q.trim();return S.properties.filter(p=>(!UI.stale||isStale(p))&&(!UI.ft||p.type===UI.ft)&&(!UI.fp||p.purpose===UI.fp)&&(!UI.fs||p.status===UI.fs)&&(!UI.fg||p.gov===UI.fg)&&(!q||[p.title,p.code,p.area,p.ownerName].join(' ').includes(q))).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0))}
+function props(){
+ return `<div class="row between"><div><h1>العقارات</h1><p class="mute">${S.properties.length} عقار مسجل</p></div><button class="btn pri" data-act="newProp">إضافة عقار</button></div>
+ <div class="filters"><input id="q" placeholder="بحث بالاسم أو الكود أو المنطقة" value="${esc(UI.q)}" aria-label="بحث">
+ <select id="fs" aria-label="الحالة">${opts(STATUS,UI.fs,'كل الحالات')}</select><select id="ft" aria-label="النوع">${opts(TYPES,UI.ft,'كل الأنواع')}</select><select id="fg" aria-label="المحافظة">${opts(GOVS,UI.fg,'كل المحافظات')}</select>${staleList().length?`<button type="button" class="chip ${UI.stale?'on':''}" data-stalef aria-pressed="${!!UI.stale}">⏰ أكثر من شهر بدون بيع (${staleList().length})</button>`:''}</div>
+ <div id="plist">${propCards(filteredProps(),true)}</div>`}
+function propCards(list,admin){
+ if(!list.length)return`<div class="card empty">${S.properties.length?'ماكو عقارات تطابق البحث':'ماكو عقارات بعد. اضغط "إضافة عقار" حتى تبدي.'}</div>`;
+ return `<div class="pgrid">${list.map(p=>{const ph=photosOf(p.id)[0];const done=p.status==='مباع'||p.status==='مؤجر';
+ return`<article class="pc ${admin?'':'tilt'}" data-${admin?'prop':'view'}="${p.id}" tabindex="0"><div class="ph">${ph?`<img class="cover" src="${ph.data}" alt="${esc(p.title)}" loading="lazy">`:`<img class="tw" src="${TOWER}" alt="">`}
+ <span class="badge">${admin?stTag(p.status):(p.status==='محجوز'?stTag('محجوز'):`<span class="tag">${esc(p.purpose)}</span>`)}</span>
+ ${p.featured&&!done?'<span class="fstar">★ مميز</span>':''}${admin&&isStale(p)?`<span class="stag">⏰ ${pAge(p)} يوم بدون بيع</span>`:''}${!admin&&done?`<div class="sold-ribbon">${pubLabel(p.status)}</div>`:''}</div>
+ <div class="bd"><div class="row between small mute"><span>${esc(p.type)} · ${esc(p.purpose)}</span><span class="num pcode">${esc(p.code)}</span></div>
+ <h3>${esc(p.title)}</h3><div class="small mute">${esc(p.gov)}، ${esc(p.area)}</div>
+ <div class="specs"><span><span class="num">${fmt(p.size)}</span> م²</span>${num(p.rooms)?`<span>${fmt(p.rooms)} غرف</span>`:''}${num(p.baths)?`<span>${fmt(p.baths)} حمام</span>`:''}</div>
+ <div class="price" style="margin-top:auto">${IQD(p.price)}${p.priceType==='للمتر'?' <span class="small mute">للمتر</span>':''}</div>
+ ${admin&&p.published===false?'<span class="small t-warn">مخفي عن الزبائن</span>':''}</div></article>`}).join('')}</div>`}
+
+function propForm(p={}){
+ const isNew=!p.id;let pics=isNew?[]:photosOf(p.id).map(x=>({id:x.id,data:x.data}));
+ const md=openModal(`<header><h2>${isNew?'إضافة عقار':'تعديل العقار'}</h2><button class="x" data-close aria-label="إغلاق">×</button></header>
+ <form id="pf" class="grid">
+ <fieldset><legend>المعلومات الأساسية</legend>${fld('title','عنوان العقار',p.title,{req:1,ph:'مثال: بيت 200 متر في حي القادرية'})}
+ <div class="grid g3">${sel('type','النوع',TYPES,p.type,{req:1})}${sel('purpose','الغرض',PURPOSES,p.purpose,{req:1})}${sel('status','الحالة',STATUS.filter(s=>isNew?s!=='مباع'&&s!=='مؤجر':true),p.status||'متاح',{req:1})}</div>
+ <div><label for="f_desc">وصف العقار (يظهر للزبون)</label><textarea id="f_desc" name="desc">${esc(p.desc)}</textarea></div>
+ <label class="row" style="font-weight:500"><input type="checkbox" name="published" style="width:20px;min-height:20px" ${p.published===false?'':'checked'}> يظهر بصفحة الزبائن</label><label class="row" style="font-weight:500"><input type="checkbox" name="featured" style="width:20px;min-height:20px" ${p.featured?'checked':''}> عقار مميز — يظهر بالشريط المتحرك أعلى صفحة الزبون</label></fieldset>
+ <fieldset><legend>التسعير والملكية</legend><div class="grid g3">${fld('price','السعر المعلن',p.price,{req:1,money:1})}${sel('priceType','نوع السعر',['إجمالي','للمتر'],p.priceType)}${sel('nego','التفاوض',['قابل للتفاوض','سعر نهائي'],p.nego)}</div>
+ <div class="grid g2">${sel('own','طبيعة العقار',Object.entries(OWN),p.own||'broker',{req:1})}<div id="costBox">${fld('cost','كلفة شراء العقار',p.cost,{money:1})}</div></div></fieldset>
+ <fieldset><legend>الموقع</legend><div class="grid g3">${sel('gov','المحافظة',GOVS,p.gov||'ميسان',{req:1})}${fld('area','المنطقة / الحي',p.area,{req:1})}${fld('address','العنوان التفصيلي',p.address,{ph:'أقرب نقطة دالة'})}</div></fieldset>
+ ${propMapField(p)}
+ <fieldset><legend>المواصفات</legend><div class="grid g4">${fld('size','المساحة م²',p.size,{type:'number',req:1})}${fld('rooms','الغرف',p.rooms,{type:'number'})}${fld('baths','الحمامات',p.baths,{type:'number'})}${fld('year','سنة البناء',p.year,{type:'number'})}
+ ${fld('floor','الطابق',p.floor,{type:'number'})}${fld('floors','طوابق المبنى',p.floors,{type:'number'})}${sel('furn','التأثيث',FURN,p.furn)}</div></fieldset>
+ <fieldset><legend>الصور</legend><input type="file" id="pics" accept="image/*" multiple aria-label="إضافة صور"><div class="thumbs" id="thumbs"></div><div class="small mute">أول صورة تكون صورة الغلاف. تنضغط الصور تلقائياً.</div></fieldset>
+ <fieldset><legend>بيانات داخلية (ما تظهر للزبون)</legend><div class="grid g2">${fld('ownerName','المالك / الجهة',p.ownerName)}${fld('ownerPhone','هاتف المالك',p.ownerPhone,{type:'tel',ph:'07xx xxx xxxx'})}</div>
+ <div><label for="f_notes">ملاحظات داخلية</label><textarea id="f_notes" name="notes">${esc(p.notes)}</textarea></div></fieldset>
+ <div class="row"><button class="btn pri" type="submit">${isNew?'حفظ العقار':'حفظ التعديلات'}</button><button class="btn" type="button" data-close>إلغاء</button></div></form>`);
+ bindPropMap(md);const f=$('#pf',md),own=f.own,cb=$('#costBox',md);const tc=()=>cb.style.visibility=own.value==='invest'?'visible':'hidden';own.onchange=tc;tc();
+ const drawT=()=>{$('#thumbs',md).innerHTML=pics.map((x,i)=>`<div class="t"><img src="${x.data}" alt=""><button type="button" data-rm="${i}" aria-label="حذف الصورة">×</button></div>`).join('');
+  md.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{pics.splice(+b.dataset.rm,1);drawT()})};drawT();
+ $('#pics',md).onchange=async e=>{for(const fl of e.target.files){if(pics.length>=8){toast('الحد 8 صور للعقار');break}try{pics.push({data:await compress(fl)})}catch(_){toast('تعذر قراءة صورة')}}e.target.value='';drawT()};
+ f.onsubmit=async e=>{e.preventDefault();const d=formData(f);d.published=!!f.published.checked;d.featured=!!f.featured.checked;d.mapUrl=(d.mapUrl||'').trim();{const ll=parseLL(d.mapUrl);d.lat=ll?ll[0]:'';d.lng=ll?ll[1]:''}
+  for(const k of['price','cost'])d[k]=num(d[k]);for(const k of['size','rooms','baths','year','floor','floors'])d[k]=d[k]===''?'':num(d[k]);
+  if(d.own!=='invest')d.cost=0;
+  const id=p.id||uid();const rec={...p,...d,code:mrNum(p.code)?p.code:mrCode(nextMR()),createdAt:p.createdAt||Date.now()};delete rec.id;
+  const btn=f.querySelector('[type=submit]');btn.disabled=true;
+  try{await put('properties',id,rec);
+   const old=photosOf(id),keep=new Set(pics.filter(x=>x.id).map(x=>x.id));
+   for(const o of old)if(!keep.has(o.id))await drop('photos',o.id);
+   for(let i=0;i<pics.length;i++){const x=pics[i];if(!x.id)await put('photos',uid(),{propertyId:id,data:x.data,order:i});else{const o=old.find(y=>y.id===x.id);if(o&&o.order!==i)await put('photos',x.id,{propertyId:id,data:o.data,order:i})}}
+   closeModal();toast(isNew?'انحفظ العقار':'انحفظت التعديلات')}catch(_){btn.disabled=false}}}
+
+function propDetail(id){
+ const p=byId('properties',id);if(!p)return;const ex=S.tx.filter(t=>t.kind==='exp_property'&&t.propertyId===id);const exT=propExp(id);const ph=photosOf(id);
+ const md=openModal(`<header><div><span class="small mute num">${esc(p.code)}</span><h2>${esc(p.title)}</h2></div><button class="x" data-close aria-label="إغلاق">×</button></header>
+ ${gallery(ph)}
+ <div class="row">${stTag(p.status)}<span class="tag">${esc(p.type)}</span><span class="tag">${esc(p.purpose)}</span><span class="tag">${OWN[p.own||'broker']}</span>${p.published===false?'<span class="tag t-warn">مخفي عن الزبائن</span>':''}</div>
+ <div class="grid g2"><div class="calc"><div><span>السعر المعلن</span><b>${IQD(p.price)}</b></div>${p.own==='invest'?`<div><span>كلفة الشراء</span><span>${IQD(p.cost)}</span></div>`:''}
+ <div><span>مصروفات خاصة على العقار</span><span>${IQD(exT)}</span></div>${p.own==='invest'?`<div class="tot"><span>الكلفة الكلية</span><span>${IQD(num(p.cost)+exT)}</span></div>`:''}</div>
+ <div class="calc"><div><span>الموقع</span><span>${esc(p.gov)}، ${esc(p.area)}</span></div><div><span>المساحة</span><span><span class="num">${fmt(p.size)}</span> م²</span></div><div><span>المالك</span><span>${esc(p.ownerName)||'—'} <span class="num">${esc(p.ownerPhone)}</span></span></div>${p.mapUrl?`<div><span>الخريطة</span><a href="${esc(mapOpen(parseLL(p.mapUrl),p.mapUrl))}" target="_blank" rel="noopener">فتح بـ Google Maps</a></div>`:''}</div></div>
+ ${p.notes?`<div class="note"><b>ملاحظات داخلية:</b> ${esc(p.notes)}</div>`:''}
+ ${p.sale?saleSummary(p):''}
+ <div><div class="row between"><h3>المصروفات الخاصة على هذا العقار</h3>${p.sale?'':'<button class="btn sm" id="addExp">تسجيل مصروف</button>'}</div>
+ ${ex.length?`<table><tbody>${ex.map(t=>`<tr><td>${esc(t.category)}<div class="small mute">${esc(t.date)} ${esc(t.desc||'')}</div></td><td class="n t-bad">${IQD(t.amount)}</td></tr>`).join('')}</tbody></table>`:'<p class="mute small">ماكو مصروفات مسجلة.</p>'}</div>
+ <div class="row">${p.sale?`<button class="btn danger" id="unsale">إلغاء ${p.sale.kind==='rent'?'التأجير':'البيع'}</button>`:`<button class="btn gold" id="sell">${p.purpose==='إيجار'?'تسجيل تأجير وتوزيع الأرباح':'تسجيل بيع وتوزيع الأرباح'}</button>`}
+ <button class="btn" id="mkct">${p.purpose==='إيجار'?'تحرير عقد إيجار':'تحرير عقد بيع وشراء'}</button><button class="btn" id="edit">تعديل</button><button class="btn danger" id="del">حذف العقار</button></div>`);
+  $('#mkct',md).onclick=()=>openCt(ctFromProperty(p));
+ bindGallery(md,ph);
+ $('#edit',md).onclick=()=>propForm(p);
+ $('#del',md).onclick=async()=>{if(await ask(`حذف "${esc(p.title)}"؟ راح تنحذف صوره ومصروفاته وحركات بيعه.`,'حذف')){for(const t of S.tx.filter(t=>t.propertyId===id))await drop('tx',t.id);for(const x of photosOf(id))await drop('photos',x.id);await drop('properties',id);toast('انحذف العقار')}};
+ if($('#addExp',md))$('#addExp',md).onclick=()=>txForm({kind:'exp_property',propertyId:id});
+ if($('#sell',md))$('#sell',md).onclick=()=>saleForm(p);
+ if($('#unsale',md))$('#unsale',md).onclick=async()=>{if(await ask('إلغاء العملية؟ راح تنحذف حركات الأرباح المرتبطة بيها ويرجع العقار متاح.','إلغاء العملية')){for(const t of S.tx.filter(t=>t.saleOf===id))await drop('tx',t.id);const r={...p};delete r.id;delete r.sale;r.status='متاح';await put('properties',id,r);toast('رجع العقار متاح')}};
+}
+function saleSummary(p){const s=p.sale;return`<div class="card" style="background:var(--soft)"><h3>${s.kind==='rent'?'تفاصيل التأجير':'تفاصيل البيع'} — <span class="num">${esc(s.date)}</span></h3>
+ <div class="calc" style="background:transparent;padding:8px 0"><div><span>${s.kind==='rent'?'مبلغ الإيجار':'سعر البيع'}</span><b>${IQD(s.price)}</b></div>${s.buyer?`<div><span>الطرف الثاني</span><span>${esc(byId('clients',s.buyer)?.name||'—')}</span></div>`:''}
+ <div><span>الربح الصافي</span><b>${IQD(s.profit)}</b></div>${(s.shares||[]).map(x=>`<div><span>${esc(byId('partners',x.partnerId)?.name||'شريك محذوف')} (${x.mode==='pct'?fmt(x.value)+'%':'مبلغ ثابت'})</span><span>${IQD(x.amount)}</span></div>`).join('')}
+ <div class="tot"><span>حصة المكتب (إيراد عام)</span><span>${IQD(s.office)}</span></div></div></div>`}
+const gallery=ph=>ph.length?`<div class="gal"><div class="big"><img id="gbig" src="${ph[0].data}" alt=""></div>${ph.length>1?`<div class="thumbs">${ph.map((x,i)=>`<div class="t" data-g="${i}" role="button" tabindex="0"><img src="${x.data}" alt=""></div>`).join('')}</div>`:''}</div>`:'';
+function bindGallery(md,ph){md.querySelectorAll('[data-g]').forEach(t=>t.onclick=()=>$('#gbig',md).src=ph[+t.dataset.g].data)}
+
+function saleForm(p){
+ const rent=p.purpose==='إيجار',exT=propExp(p.id),inv=p.own==='invest';let rows=[];
+ const md=openModal(`<header><h2>${rent?'تسجيل تأجير':'تسجيل بيع'}: ${esc(p.title)}</h2><button class="x" data-close aria-label="إغلاق">×</button></header>
+ <form id="sf" class="grid"><div class="grid g3">${fld('price',rent?'مبلغ الإيجار':'سعر البيع الفعلي',p.price,{req:1,money:1})}${fld('date','التاريخ',today(),{type:'date',req:1})}
+ ${sel('buyer',rent?'المستأجر':'المشتري',S.clients.map(c=>[c.id,c.name]),'',{ph:'— اختياري —'})}</div>
+ ${inv?'':fld('comm','العمولة المستلمة للمكتب',rent?'':'',{req:1,money:1})}
+ <div class="calc" id="calc"></div>
+ <fieldset><legend>حصص الشركاء من الربح</legend><div id="rows" class="grid"></div>
+ <div><button class="btn sm" type="button" id="addR" ${S.partners.length?'':'disabled'}>+ إضافة شريك</button>${S.partners.length?'':' <span class="small mute">ضيف شركاء من قسم الشركاء أولاً</span>'}</div></fieldset>
+ <div class="calc" id="tot"></div>
+ <div class="note small">بعد الحفظ: حصة المكتب تنسجل إيراد عام، وحصة كل شريك تنسجل إيراد خاص بكشف حسابه، والعقار يصير "${rent?'مؤجر':'مباع'}" ويظهر للزبون "${rent?'تم التأجير':'تم البيع'}".</div>
+ <div class="row"><button class="btn pri" type="submit">حفظ وتوزيع</button><button class="btn" type="button" data-close>إلغاء</button></div></form>`);
+ const f=$('#sf',md);
+ const profit=()=>inv?num(f.price.value)-num(p.cost)-exT:num(f.comm.value)-exT;
+ const drawRows=()=>{$('#rows',md).innerHTML=rows.map((r,i)=>`<div class="share"><div><label>الشريك</label><select data-i="${i}" data-k="partnerId">${opts(S.partners.map(x=>[x.id,x.name]),r.partnerId,'اختر…')}</select></div>
+  <div><label>الطريقة</label><select data-i="${i}" data-k="mode">${opts([['pct','نسبة %'],['fixed','مبلغ ثابت']],r.mode)}</select></div>
+  <div><label>${r.mode==='pct'?'النسبة %':'المبلغ'}</label><input data-i="${i}" data-k="value" inputmode="decimal" value="${esc(r.value)}"></div>
+  <div><label>الحصة</label><div class="calc" style="min-height:44px;padding:10px"><span class="num" data-amt="${i}"></span></div></div>
+  <button type="button" class="x" data-del="${i}" aria-label="حذف">×</button></div>`).join('');
+  md.querySelectorAll('#rows [data-k]').forEach(el=>el.oninput=el.onchange=()=>{rows[+el.dataset.i][el.dataset.k]=el.value;if(el.dataset.k==='mode')drawRows();else calc()});
+  md.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{rows.splice(+b.dataset.del,1);drawRows()});calc()};
+ const amt=r=>r.mode==='pct'?profit()*num(r.value)/100:num(r.value);
+ function calc(){const pr=profit();rows.forEach((r,i)=>{const e=$(`[data-amt="${i}"]`,md);if(e)e.textContent=fmt(amt(r))});
+  $('#calc',md).innerHTML=inv?`<div><span>سعر ${rent?'الإيجار':'البيع'}</span><span>${IQD(f.price.value)}</span></div><div><span>ناقص كلفة الشراء</span><span>${IQD(p.cost)}</span></div><div><span>ناقص المصروفات الخاصة على العقار</span><span>${IQD(exT)}</span></div><div class="tot"><span>الربح الصافي</span><span>${IQD(pr)}</span></div>`
+  :`<div><span>العمولة</span><span>${IQD(f.comm.value)}</span></div><div><span>ناقص المصروفات الخاصة على العقار</span><span>${IQD(exT)}</span></div><div class="tot"><span>الربح الصافي</span><span>${IQD(pr)}</span></div>`;
+  const ps=rows.reduce((a,r)=>a+amt(r),0),of=pr-ps;
+  $('#tot',md).innerHTML=`<div><span>مجموع حصص الشركاء</span><span>${IQD(ps)}</span></div><div class="tot"><span>حصة المكتب</span><span class="${of<0?'t-bad':''}">${IQD(of)}</span></div>${of<0?'<div class="t-bad small">حصص الشركاء أكبر من الربح، راجع الأرقام.</div>':''}`}
+ f.price.oninput=calc;if(f.comm)f.comm.addEventListener('input',calc);
+ $('#addR',md).onclick=()=>{rows.push({partnerId:'',mode:'pct',value:''});drawRows()};drawRows();
+ f.onsubmit=async e=>{e.preventDefault();
+  if(rows.some(r=>!r.partnerId||!num(r.value)))return toast('كمّل بيانات كل شريك أو احذف السطر');
+  if(new Set(rows.map(r=>r.partnerId)).size<rows.length)return toast('نفس الشريك مكرر');
+  const pr=profit(),shares=rows.map(r=>({partnerId:r.partnerId,mode:r.mode,value:num(r.value),amount:Math.round(amt(r))})),ps=shares.reduce((a,x)=>a+x.amount,0),of=Math.round(pr-ps);
+  if(of<0&&!(await ask('حصة المكتب بالسالب. تكمل؟','أكمل')))return;
+  const d=formData(f),label=(rent?'تأجير ':'بيع ')+p.title,kind=rent?'rent':'sale';
+  const sale={kind,price:num(d.price),date:d.date,buyer:d.buyer||'',comm:inv?0:num(d.comm),cost:inv?num(p.cost):0,expenses:exT,profit:Math.round(pr),shares,office:of};
+  f.querySelector('[type=submit]').disabled=true;
+  try{if(of)await put('tx',uid(),{kind:of>0?'inc_office':'exp_office',category:of>0?(rent?'ربح تأجير عقار':'ربح بيع عقار'):'خسارة عقار',amount:Math.abs(of),date:d.date,desc:label,propertyId:p.id,saleOf:p.id,auto:true});
+   for(const x of shares)if(x.amount)await put('tx',uid(),{kind:x.amount>0?'inc_partner':'exp_partner',category:(x.amount>0?'حصة ربح من ':'حصة خسارة من ')+label,amount:Math.abs(x.amount),date:d.date,partnerId:x.partnerId,propertyId:p.id,saleOf:p.id,auto:true});
+   const r={...p,status:rent?'مؤجر':'مباع',sale,soldAt:Date.now()};delete r.id;await put('properties',p.id,r);
+   closeModal();toast(rent?'انسجل التأجير ووُزعت الأرباح':'انسجل البيع ووُزعت الأرباح')}catch(_){}}}
+
+/* clients */
+function clients(){const q=UI.q.trim();const L=S.clients.filter(c=>!q||[c.name,c.phone,c.interests].join(' ').includes(q));
+ return `<div class="row between"><div><h1>العملاء</h1><p class="mute">${S.clients.length} عميل</p></div><button class="btn pri" data-act="newClient">إضافة عميل</button></div>
+ <input id="q" placeholder="بحث بالاسم أو الرقم" value="${esc(UI.q)}" aria-label="بحث" style="max-width:420px">
+ <div class="card">${L.length?`<div class="scroll"><table class="stack"><thead><tr><th>العميل</th><th>الهاتف</th><th>النوع</th><th>الحالة</th><th>الميزانية</th></tr></thead><tbody>
+ ${L.map(c=>`<tr class="click" data-client="${c.id}"><td><b>${esc(c.name)}</b>${c.interests?`<div class="small mute">${esc(c.interests)}</div>`:''}</td><td class="num">${esc(c.phone)}</td><td>${(c.types||[]).map(esc).join('، ')}</td><td>${stTagC(c.status)}</td><td>${c.budget?IQD(c.budget):'—'}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">ماكو عملاء</div>'}</div>`}
+const stTagC=s=>`<span class="tag ${s==='نشط'?'t-ok':s==='مغلق'?'':'t-warn'}">${esc(s)}</span>`;
+function clientForm(c={}){const md=openModal(`<header><h2>${c.id?'تعديل عميل':'إضافة عميل'}</h2><button class="x" data-close aria-label="إغلاق">×</button></header>
+ <form id="cf" class="grid"><div class="grid g2">${fld('name','الاسم / الشركة',c.name,{req:1})}${fld('phone','رقم الهاتف',c.phone,{type:'tel',req:1,ph:'07xx xxx xxxx'})}${fld('email','البريد الإلكتروني',c.email,{type:'email'})}${sel('status','الحالة',CSTAT,c.status||'محتمل',{req:1})}</div>
+ <div><label>نوع العميل</label><div class="row">${CTYPES.map(t=>`<label class="row" style="font-weight:500;margin:0"><input type="checkbox" name="types" value="${t}" style="width:20px;min-height:20px" ${(c.types||[]).includes(t)?'checked':''}> ${t}</label>`).join('')}</div></div>
+ <div class="grid g2">${fld('budget','الميزانية المتوقعة',c.budget,{money:1})}${fld('interests','الاهتمامات',c.interests,{ph:'مثال: دار بحي القادرية'})}</div>
+ <div class="row"><button class="btn pri" type="submit">حفظ</button>${c.id?'<button class="btn danger" type="button" id="del">حذف</button>':''}<button class="btn" type="button" data-close>إلغاء</button></div></form>`,true);
+ const f=$('#cf',md);if($('#del',md))$('#del',md).onclick=async()=>{if(await ask(`حذف العميل "${esc(c.name)}"؟`,'حذف')){await drop('clients',c.id);toast('انحذف')}};
+ f.onsubmit=async e=>{e.preventDefault();const d=formData(f);d.types=[...f.querySelectorAll('[name=types]:checked')].map(x=>x.value);d.budget=num(d.budget);await put('clients',c.id||uid(),{...d,createdAt:c.createdAt||Date.now()});closeModal();toast('انحفظ العميل')}}
+
+/* partners */
+function partners(){
+ return `<div class="row between"><div><h1>الشركاء</h1><p class="mute">${S.partners.length} من 50 شريك</p></div><button class="btn pri" data-act="newPartner" ${S.partners.length>=50?'disabled':''}>إضافة شريك</button></div>
+ ${S.partners.length?`<div class="pgrid">${S.partners.map(p=>{const b=partnerBal(p.id);return`<article class="card" data-partner="${p.id}" style="cursor:pointer" tabindex="0">
+ <div class="row between"><h3>${esc(p.name)}</h3><span class="tag ${p.status==='غير نشط'?'':'t-ok'}">${esc(p.status||'نشط')}</span></div><div class="small mute num">${esc(p.phone)}</div>
+ <div class="calc" style="margin-top:12px"><div><span>رأس المال</span><span>${IQD(b.cap)}</span></div><div><span>الإيرادات والأرباح</span><span class="t-ok">${IQD(b.inc)}</span></div><div><span>مصروفات وسحوبات</span><span class="t-bad">${IQD(b.exp+b.wd)}</span></div><div class="tot"><span>الرصيد</span><span>${IQD(b.bal)}</span></div></div></article>`}).join('')}</div>`:'<div class="card empty">ماكو شركاء بعد</div>'}`}
+function partnerForm(p={}){const md=openModal(`<header><h2>${p.id?'تعديل شريك':'إضافة شريك'}</h2><button class="x" data-close aria-label="إغلاق">×</button></header>
+ <form id="rf" class="grid"><div class="grid g2">${fld('name','اسم الشريك',p.name,{req:1})}${fld('phone','رقم الهاتف',p.phone,{type:'tel',req:1})}${fld('email','البريد الإلكتروني',p.email,{type:'email'})}${sel('status','الحالة',['نشط','غير نشط'],p.status||'نشط')}</div>
+ ${p.id?'':fld('capital','رأس المال الافتتاحي (اختياري)','',{money:1})}
+ <div><label for="f_pn">ملاحظات</label><textarea id="f_pn" name="notes">${esc(p.notes)}</textarea></div>
+ <div class="row"><button class="btn pri" type="submit">حفظ</button><button class="btn" type="button" data-close>إلغاء</button></div></form>`,true);
+ const f=$('#rf',md);f.onsubmit=async e=>{e.preventDefault();const d=formData(f);const cap=num(d.capital);delete d.capital;const id=p.id||uid();
+  await put('partners',id,{...d,createdAt:p.createdAt||Date.now()});if(cap>0)await put('tx',uid(),{kind:'capital_in',category:'رأس مال افتتاحي',amount:cap,date:today(),partnerId:id});closeModal();toast('انحفظ الشريك')}}
+function partnerDetail(id){const p=byId('partners',id);if(!p)return;const b=partnerBal(id);
+ const L=S.tx.filter(t=>t.partnerId===id).sort((a,c)=>(a.date||'').localeCompare(c.date||'')||(a.updatedAt||0)-(c.updatedAt||0));let run=0;
+ const md=openModal(`<header><div><h2>كشف حساب: ${esc(p.name)}</h2><span class="small mute num">${esc(p.phone)}</span></div><button class="x" data-close aria-label="إغلاق">×</button></header>
+ <div class="grid g4"><div class="calc"><span class="small mute">رأس المال</span><b>${IQD(b.cap)}</b></div><div class="calc"><span class="small mute">الإيرادات والأرباح</span><b class="t-ok">${IQD(b.inc)}</b></div><div class="calc"><span class="small mute">مصروفات وسحوبات</span><b class="t-bad">${IQD(b.exp+b.wd)}</b></div><div class="calc"><span class="small mute">الرصيد الحالي</span><b>${IQD(b.bal)}</b></div></div>
+ <div class="row"><button class="btn sm" data-k="capital_in">إضافة رأس مال</button><button class="btn sm" data-k="inc_partner">إيراد خاص</button><button class="btn sm" data-k="exp_partner">مصروف خاص</button><button class="btn sm" data-k="withdraw">سحب</button></div>
+ ${L.length?`<div class="scroll"><table class="stack"><thead><tr><th>التاريخ</th><th>البيان</th><th class="n">المبلغ</th><th class="n">الرصيد</th></tr></thead><tbody>${L.map(t=>{const k=KINDS[t.kind];run+=k.s*num(t.amount);return`<tr><td class="num">${esc(t.date)}</td><td>${esc(t.category)}<div class="small mute">${k.t}</div></td><td class="n ${k.s>0?'t-ok':'t-bad'}">${k.s>0?'+':'−'}${IQD(t.amount)}</td><td class="n">${IQD(run)}</td></tr>`}).join('')}</tbody></table></div>`:'<p class="mute">ماكو حركات بعد.</p>'}
+ <div class="row"><button class="btn" id="edit">تعديل البيانات</button><button class="btn danger" id="del">حذف الشريك</button></div>`);
+ md.querySelectorAll('[data-k]').forEach(x=>x.onclick=()=>txForm({kind:x.dataset.k,partnerId:id}));
+ $('#edit',md).onclick=()=>partnerForm(p);
+ $('#del',md).onclick=async()=>{if(L.length)return toast('ما ينحذف شريك عنده حركات. خلي حالته "غير نشط".');if(await ask(`حذف "${esc(p.name)}"؟`,'حذف')){await drop('partners',id);closeModal();toast('انحذف')}}}
+
+/* finance */
+function finance(){const o=office();const L=S.tx.filter(t=>!UI.fk||t.kind===UI.fk).sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(b.updatedAt||0)-(a.updatedAt||0));
+ return `<div class="row between"><div><h1>الحسابات</h1><p class="mute">إيرادات ومصروفات المكتب العامة، والخاصة بالعقارات والشركاء</p></div><button class="btn pri" data-act="newTx">تسجيل حركة مالية</button></div>
+ <div class="grid g4"><div class="card kpi"><span>إيرادات عامة للمكتب</span><b class="t-ok">${IQD(o.inc)}</b></div><div class="card kpi"><span>مصروفات عامة للمكتب</span><b class="t-bad">${IQD(o.exp)}</b></div>
+ <div class="card kpi"><span>صافي ربح المكتب</span><b>${IQD(o.net)}</b></div><div class="card kpi"><span>مصروفات معلّقة على عقارات</span><b>${IQD(o.pend)}</b><span>تنطرح من ربح العقار عند بيعه</span></div></div>
+ <div class="row"><select id="fk" style="max-width:320px" aria-label="نوع الحركة">${opts(Object.entries(KINDS).map(([k,v])=>[k,v.t]),UI.fk,'كل أنواع الحركات')}</select></div>
+ <div class="card">${L.length?`<div class="scroll"><table class="stack"><thead><tr><th>التاريخ</th><th>النوع</th><th>التصنيف / البيان</th><th>مرتبط بـ</th><th class="n">المبلغ</th><th></th></tr></thead><tbody>
+ ${L.map(t=>{const k=KINDS[t.kind]||{t:t.kind,s:1};const p=t.propertyId&&byId('properties',t.propertyId),pr=t.partnerId&&byId('partners',t.partnerId);
+ return`<tr><td class="num">${esc(t.date)}</td><td>${k.t}</td><td><b>${esc(t.category)}</b>${t.desc?`<div class="small mute">${esc(t.desc)}</div>`:''}</td><td>${[p&&esc(p.title),pr&&esc(pr.name)].filter(Boolean).join(' · ')||'المكتب'}</td>
+ <td class="n ${k.s>0?'t-ok':'t-bad'}">${k.s>0?'+':'−'}${IQD(t.amount)}</td><td>${t.auto?'<span class="small mute" title="تنحذف بإلغاء البيع من صفحة العقار">تلقائي</span>':`<button class="btn sm danger" data-deltx="${t.id}">حذف</button>`}</td></tr>`}).join('')}</tbody></table></div>`:'<div class="empty">ماكو حركات</div>'}</div>`}
+function txForm(pre={}){
+ const md=openModal(`<header><h2>تسجيل حركة مالية</h2><button class="x" data-close aria-label="إغلاق">×</button></header>
+ <form id="tf" class="grid">${sel('kind','نوع الحركة',Object.entries(KINDS).map(([k,v])=>[k,v.t]),pre.kind||'exp_office',{req:1})}
+ <div id="link"></div><div class="grid g2"><div><label for="f_category" class="req">التصنيف</label><input id="f_category" name="category" list="cats" required><datalist id="cats"></datalist></div>
+ ${fld('amount','المبلغ (دينار)','',{req:1,money:1})}</div>${fld('date','التاريخ',today(),{type:'date',req:1})}
+ <div><label for="f_tdesc">الوصف (اختياري)</label><textarea id="f_tdesc" name="desc" style="min-height:60px"></textarea></div>
+ <div class="row"><button class="btn pri" type="submit">حفظ الحركة</button><button class="btn" type="button" data-close>إلغاء</button></div></form>`,true);
+ const f=$('#tf',md);
+ const upd=()=>{const k=KINDS[f.kind.value];const open=S.properties.filter(p=>!p.sale);
+  $('#link',md).innerHTML=k.scope==='property'?sel('propertyId','العقار',open.map(p=>[p.id,p.title+' ('+p.code+')']),pre.propertyId,{req:1,ph:'اختر العقار…'}):k.scope==='partner'?sel('partnerId','الشريك',S.partners.map(p=>[p.id,p.name]),pre.partnerId,{req:1,ph:'اختر الشريك…'}):'';
+  const cats=k.s>0?S.settings.incomeCats:S.settings.expenseCats;$('#cats',md).innerHTML=(f.kind.value==='capital_in'?['رأس مال']:cats).map(c=>`<option value="${esc(c)}">`).join('')};
+ f.kind.onchange=upd;upd();
+ f.onsubmit=async e=>{e.preventDefault();const d=formData(f);d.amount=num(d.amount);if(d.amount<=0)return toast('المبلغ لازم يكون أكبر من صفر');
+  for(const k of['propertyId','partnerId'])if(!d[k])delete d[k];await put('tx',uid(),d);closeModal();toast('انحفظت الحركة')}}
+
+/* ---------- contracts ---------- */
+const CT={sale:'عقد بيع وشراء (مقاولة)',rent:'عقد إيجار'};
+function words(n){n=Math.floor(Math.abs(n));if(!n)return'صفر';
+ const O=['','واحد','اثنان','ثلاثة','أربعة','خمسة','ستة','سبعة','ثمانية','تسعة','عشرة','أحد عشر','اثنا عشر','ثلاثة عشر','أربعة عشر','خمسة عشر','ستة عشر','سبعة عشر','ثمانية عشر','تسعة عشر'];
+ const T=['','','عشرون','ثلاثون','أربعون','خمسون','ستون','سبعون','ثمانون','تسعون'];
+ const H=['','مائة','مائتان','ثلاثمائة','أربعمائة','خمسمائة','ستمائة','سبعمائة','ثمانمائة','تسعمائة'];
+ const tri=x=>{const h=Math.floor(x/100),r=x%100,p=[];if(h)p.push(H[h]);if(r){if(r<20)p.push(O[r]);else{const u=r%10;p.push(u?O[u]+' و'+T[Math.floor(r/10)]:T[Math.floor(r/10)])}}return p.join(' و')};
+ const G=[[],['ألف','ألفان','آلاف'],['مليون','مليونان','ملايين'],['مليار','ملياران','مليارات']];
+ const parts=[];let g=0;
+ while(n>0&&g<4){const x=n%1000;if(x){let s;if(!g)s=tri(x);else{const[one,two,pl]=G[g];s=x===1?one:x===2?two:x<=10?tri(x)+' '+pl:x===200?'مائتا '+one:tri(x)+' '+one}parts.unshift(s)}n=Math.floor(n/1000);g++}
+ return parts.join(' و')}
+const inWords=v=>num(v)?words(num(v))+' دينار عراقي لا غير':'';
+const dmy=d=>d?String(d).split('-').reverse().join('/'):'';
+const nextNo=type=>Math.max(0,...S.contracts.filter(c=>c.type===type).map(c=>num(c.no)))+1;
+const padNo=n=>num(n)?String(Math.round(num(n))).padStart(6,'0'):'';
+
+function contracts(){const L=[...S.contracts].sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(b.createdAt||0)-(a.createdAt||0));
+ return `<div class="row between"><div><h1>العقود</h1><p class="mute">عقود البيع والشراء والإيجار بنفس نموذج المكتب، تتعبّى من بيانات العقار والزبون وتطلع جاهزة للطباعة.</p></div>
+ <div class="row"><button class="btn pri" data-act="newSale">عقد بيع وشراء جديد</button><button class="btn pri" data-act="newRent">عقد إيجار جديد</button></div></div>
+ <div class="row small"><span class="mute">نموذج فارغ للتعبئة باليد:</span><button class="btn sm" data-blank="sale">طباعة عقد بيع فارغ</button><button class="btn sm" data-blank="rent">طباعة عقد إيجار فارغ</button></div>
+ <div class="card">${L.length?`<div class="scroll"><table class="stack"><thead><tr><th>الرقم</th><th>النوع</th><th>الطرف الأول</th><th>الطرف الثاني</th><th>العقار</th><th>التاريخ</th><th></th></tr></thead><tbody>
+ ${L.map(c=>{const s=c.type==='sale';return`<tr><td class="num">${padNo(c.no)}</td><td>${s?'بيع / شراء':'إيجار'}</td><td>${esc(s?c.sName:c.lName)||'—'}</td><td>${esc(s?c.bName:c.tName)||'—'}</td><td>${esc(c.propertyId&&byId('properties',c.propertyId)?.title||c.propType||'—')}</td><td class="num">${dmy(c.date)}</td>
+ <td><div class="row" style="flex-wrap:nowrap"><button class="btn sm gold" data-ctp="${c.id}">طباعة</button><button class="btn sm" data-cte="${c.id}">تعديل</button><button class="btn sm danger" data-ctd="${c.id}">حذف</button></div></td></tr>`}).join('')}</tbody></table></div>`:'<div class="empty">ماكو عقود محفوظة بعد</div>'}</div>`}
+
+function ctFromProperty(p,type){const c={type:type||(p.purpose==='إيجار'?'rent':'sale'),propertyId:p.id};
+ const loc=[p.gov,p.area,p.address].filter(Boolean).join(' / '),cl=p.sale?.buyer&&byId('clients',p.sale.buyer),price=p.sale?.price||p.price;
+ if(c.type==='sale')Object.assign(c,{propType:p.type,size:num(p.size)?fmt(p.size)+' م²':'',propAddr:loc,price,sName:p.ownerName,sPhone:p.ownerPhone,date:p.sale?.date||today()},cl?{clientId:cl.id,bName:cl.name,bPhone:cl.phone}:{});
+ else Object.assign(c,{propType:p.type,propLoc:loc,rent:price,lName:p.ownerName,lPhone:p.ownerPhone,date:p.sale?.date||today(),from:p.sale?.date||''},cl?{clientId:cl.id,tName:cl.name,tPhone:cl.phone}:{});
+ const s1=c.type==='sale'?'s':'l',s2=c.type==='sale'?'b':'t';if(p.ownerName)c['pick_'+s1]='owner';if(c.clientId)c['pick_'+s2]=c.clientId;
+ return c}
+
+function openCt(c){closeModal();UI.ct={comm:2,...c};if(!UI.ct.no)UI.ct.no=nextNo(UI.ct.type);if(!UI.ct.date)UI.ct.date=today();if(UI.ct.type==='rent'&&UI.ct.rent&&!UI.ct.rentWords)UI.ct.rentWords=inWords(UI.ct.rent);if(UI.ct.type==='sale'&&UI.ct.price&&UI.ct.remain==null)UI.ct.remain=num(UI.ct.price)-num(UI.ct.deposit);UI.sec='ctedit';render();scrollTo(0,0)}
+function ctEditor(){const c=UI.ct;if(!c)return contracts();const sale=c.type==='sale',mv=k=>c[k]===''||c[k]==null?'':fmt(c[k]);
+ const prop=c.propertyId&&byId('properties',c.propertyId);
+ const pick=k=>`<div><label for="f_pick_${k}">تعبئة الاسم تلقائياً</label><select id="f_pick_${k}" name="pick_${k}"><option value="">— كتابة يدوية —</option>${prop&&prop.ownerName?`<option value="owner" ${c['pick_'+k]==='owner'?'selected':''}>صاحب العقار: ${esc(prop.ownerName)}</option>`:''}<optgroup label="العملاء">${S.clients.map(x=>`<option value="${x.id}" ${c['pick_'+k]===x.id?'selected':''}>${esc(x.name)}${x.phone?' — '+esc(x.phone):''}</option>`).join('')}</optgroup></select></div>`;
+ const party=(k,t)=>`<fieldset><legend>${t}</legend>${pick(k)}<div class="grid g2">${fld(k+'Name','الاسم الكامل',c[k+'Name'])}${fld(k+'Phone','الموبايل',c[k+'Phone'],{type:'tel'})}${fld(k+'Addr','العنوان',c[k+'Addr'])}${fld(k+'Id','رقم الهوية',c[k+'Id'])}</div></fieldset>`;
+ return `<div class="ce-top"><button class="btn sm" data-ceback>→ رجوع للعقود</button>
+ <div class="seg big" role="group" aria-label="نوع العقد">${[['sale','عقد بيع وشراء'],['rent','عقد إيجار']].map(([v,t])=>`<button type="button" data-cetype="${v}" class="${c.type===v?'on':''}" aria-pressed="${c.type===v}">${t}</button>`).join('')}</div>
+ <div class="row"><button class="btn" data-cesave>حفظ</button><button class="btn gold" data-ceprint>حفظ وطباعة</button></div></div>
+ <div class="ce"><form id="cef" class="ce-form grid" autocomplete="off" onsubmit="return false">
+ <div class="ce-pick"><b>سحب المعلومات من عقار عندنا</b><div class="grid g2">${sel('propertyId','العقار',S.properties.map(p=>[p.id,p.code+' — '+p.title]),c.propertyId,{ph:'— اختر عقار —'})}</div><span class="small mute">تختار العقار فتتعبّى بياناته واسم صاحبه. ولكل طرف تگدر تختار اسمه من العملاء أو تكتبه يدوياً.</span></div>
+ <div class="grid g3">${fld('no','رقم العقد',c.no,{type:'number'})}${fld('date','تاريخ التحرير',c.date,{type:'date'})}${sale?fld('time','الساعة',c.time,{ph:'مثال: 11 صباحاً'}):''}</div>
+ ${sale?party('s','الفريق الأول (البائع)')+party('b','الفريق الثاني (المشتري)'):party('l','الطرف الأول (المؤجر)')+party('t','الطرف الثاني (المستأجر)')}
+ ${sale?`<fieldset><legend>معلومات العقار</legend><div class="grid g2">${fld('propType','نوع الملك',c.propType)}${fld('size','المساحة',c.size)}${fld('serial','رقم التسلسل',c.serial)}${fld('propAddr','العنوان',c.propAddr)}</div></fieldset>
+ <fieldset><legend>المبالغ</legend><div class="grid g3">${fld('price','بدل البيع المتفق عليه',mv('price'),{money:1})}${fld('deposit','العربون المقبوض',mv('deposit'),{money:1})}${fld('remain','الباقي',mv('remain'),{money:1})}</div>
+ <div class="grid g3">${fld('remainDate','تاريخ تسديد الباقي',c.remainDate,{type:'date'})}${fld('sPen','تضمينات على البائع إذا نكل',mv('sPen'),{money:1})}${fld('bPen','تضمينات على المشتري إذا نكل',mv('bPen'),{money:1})}</div>
+ <div class="grid g3">${fld('comm','الدلالية على كل طرف %',c.comm,{type:'number'})}</div></fieldset>`
+ :`<fieldset><legend>معلومات العقار</legend><div class="grid g3">${fld('propType','نوع العقار',c.propType)}${fld('propLoc','موقع العقار',c.propLoc)}${fld('propNo','رقم العقار',c.propNo)}</div></fieldset>
+ <fieldset><legend>الإيجار والمدة</legend><div class="grid g2">${fld('rent','قيمة الإيجار رقماً',mv('rent'),{money:1})}${fld('deposit','العربون المقبوض',mv('deposit'),{money:1})}</div>
+ ${fld('rentWords','قيمة الإيجار كتابةً (تتعبّى لحالها)',c.rentWords)}
+ <div class="grid g3">${fld('from','ابتداءً من تاريخ',c.from,{type:'date'})}${fld('to','إلى نهاية تاريخ',c.to,{type:'date'})}${fld('late','إيجار يومي عن التأخير',mv('late'),{money:1})}</div></fieldset>`}
+ <fieldset><legend>${sale?'فقرات إضافية وشروط':'ملاحظات وشروط إضافية'}</legend><div><label for="f_extra">كل سطر فقرة</label><textarea id="f_extra" name="extra" style="min-height:80px">${esc(c.extra)}</textarea></div>
+ <div class="grid g2">${fld('w1','اسم الشاهد الأول',c.w1)}${fld('w2','اسم الشاهد الثاني',c.w2)}</div></fieldset>
+ </form><div class="ce-pv"><div class="ce-pvh small mute">معاينة مباشرة — هكذا تنطبع الورقة. الحقل الفارغ يطلع خط منقّط للكتابة باليد.</div><div class="ce-sheet"><div class="ct" id="cepv">${ctSheet(c)}</div></div></div></div>`}
+const ctSheet=c=>c.type==='rent'?rentSheet(c):saleSheet(c);
+const MONEYK=['price','deposit','remain','sPen','bPen','rent','late'];
+function fitPv(){const pv=$('#cepv');if(!pv)return;const w=pv.parentElement.clientWidth;pv.style.zoom=Math.min(1,w/794)}
+addEventListener('resize',fitPv);
+function cePrefill(p){const x=ctFromProperty(p,UI.ct.type);for(const k in x)if(!['type','date'].includes(k)&&x[k]!=null&&x[k]!=='')UI.ct[k]=x[k];if(UI.ct.type==='sale')UI.ct.remain=num(UI.ct.price)-num(UI.ct.deposit)||'';else UI.ct.rentWords=inWords(UI.ct.rent)}
+document.addEventListener('input',e=>{const f=e.target.closest('#cef');if(!f||!UI.ct)return;const n=e.target.name;if(!n||n==='propertyId'||n.startsWith('pick_'))return;
+ UI.ct[n]=MONEYK.includes(n)?(e.target.value?num(e.target.value):''):e.target.value;
+ if(UI.ct.type==='sale'&&(n==='price'||n==='deposit')){UI.ct.remain=(num(UI.ct.price)||num(UI.ct.deposit))?num(UI.ct.price)-num(UI.ct.deposit):'';if(f.remain)f.remain.value=UI.ct.remain===''?'':fmt(UI.ct.remain)}
+ if(n==='rent'){UI.ct.rentWords=inWords(UI.ct.rent);if(f.rentWords)f.rentWords.value=UI.ct.rentWords}
+ if(MONEYK.includes(n)&&e.target.value&&!/,$/.test(e.target.value)){const p=e.target.selectionEnd,l=e.target.value.length;e.target.value=fmt(num(e.target.value));const d=e.target.value.length-l;try{e.target.setSelectionRange(p+d,p+d)}catch(_){}}
+ const pv=$('#cepv');if(pv)pv.innerHTML=ctSheet(UI.ct)});
+document.addEventListener('change',e=>{if(!UI.ct||!e.target.closest('#cef'))return;const n=e.target.name;
+ if(n==='propertyId'){const p=byId('properties',e.target.value);UI.ct.propertyId=e.target.value;if(p)cePrefill(p);render()}
+ else if(n.startsWith('pick_')){const k=n.slice(5),v=e.target.value;UI.ct[n]=v;if(v==='owner'){const p=byId('properties',UI.ct.propertyId);if(p){UI.ct[k+'Name']=p.ownerName||'';UI.ct[k+'Phone']=p.ownerPhone||''}}else if(v){const cl=byId('clients',v);if(cl){UI.ct[k+'Name']=cl.name;UI.ct[k+'Phone']=cl.phone||'';if(k==='b'||k==='t')UI.ct.clientId=cl.id}}render()}});
+async function ceSave(){const c=UI.ct;if(readOnly)return toast('ما عندك صلاحية تعديل'),null;const id=c.id||uid();const rec={...c,createdAt:c.createdAt||Date.now()};delete rec.id;
+ try{await put('contracts',id,rec)}catch(e){return null}UI.ct={...rec,id};toast('انحفظ العقد');return UI.ct}
+function silentPrint(c){$('#print')?.remove();const pv=document.createElement('div');pv.id='print';pv.className='sil';pv.innerHTML=`<div class="ct-wrap"><div class="ct">${ctSheet(c)}</div></div>`;document.body.append(pv);
+ const done=()=>{pv.remove();removeEventListener('afterprint',done)};addEventListener('afterprint',done);setTimeout(()=>{try{window.print()}catch(e){toast('الطباعة غير متاحة هنا')}},60)}
+document.addEventListener('click',async e=>{const t=e.target.closest('[data-ceback],[data-cetype],[data-cesave],[data-ceprint]');if(!t||!UI.ct)return;
+ if('ceback' in t.dataset){UI.ct=null;UI.sec='contracts';render();return}
+ if(t.dataset.cetype){if(t.dataset.cetype===UI.ct.type)return;const c=UI.ct;c.type=t.dataset.cetype;if(!c.id)c.no=nextNo(c.type);const p=c.propertyId&&byId('properties',c.propertyId);if(p)cePrefill(p);render();return}
+ if('cesave' in t.dataset){await ceSave();return}
+ if('ceprint' in t.dataset){const c=await ceSave();if(c)silentPrint(c)}});
+/* printable sheet */
+const FL=(v,w=9)=>v!=null&&v!==''?`<span class="fl">${esc(v)}</span>`:`<span class="fl e" style="min-width:${w}em"></span>`;
+const FM=(v,w=9)=>num(v)?`<span class="fl"><span class="num">${fmt(v)}</span></span>`:FL('',w);
+const FD=(v,w=7)=>v?`<span class="fl"><span class="num">${dmy(v)}</span></span>`:`<span class="fl"><span class="num">&nbsp;&nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;&nbsp;/&nbsp;20&nbsp;&nbsp;&nbsp;&nbsp;</span></span>`;
+function ctHead(){const s=S.settings;return`<div class="ct-h"><div class="ct-of"><b>${esc(s.officeName||'مكتب معراج للعقار')}</b>${s.ctTag?`<span>${esc(s.ctTag)}</span>`:''}${s.ctMgr||s.ctPhone?`<span>بإدارة / ${esc(s.ctMgr)} <span class="num">${esc(s.ctPhone)}</span></span>`:''}</div>
+ <div class="ct-lg"><img src="${LOGO}" alt="">${s.ctAddr?`<span>${esc(s.ctAddr)}</span>`:''}</div></div>`}
+function ctSigs(cols){return`<table class="ct-sig"><tr>${cols.map(([t,n])=>`<td><b>${t}</b><div>الاسم: ${FL(n,7)}</div><div>التوقيع:</div></td>`).join('')}</tr></table>`}
+const extraLines=(c,min)=>{const L=String(c.extra||'').split('\n').map(x=>x.trim()).filter(Boolean);while(L.length<min)L.push('');return L};
+function saleSheet(c){return`${ctHead()}
+ <div class="ct-bar"><span class="ct-no num">${padNo(c.no)||'&nbsp;'}</span><span class="ct-t big sale">عقد بيع وشراء</span></div>
+ <div class="ct-p"><div>الفريق الأول (البائع) ${FL(c.sName,16)} العنوان ${FL(c.sAddr,14)}</div><div>المعروف بالهوية المرقمة ${FL(c.sId,12)} الموبايل ${FL(c.sPhone,10)}</div>
+ <div>الفريق الثاني (المشتري) ${FL(c.bName,15)} العنوان ${FL(c.bAddr,14)}</div><div>المعروف بالهوية المرقمة ${FL(c.bId,12)} الموبايل ${FL(c.bPhone,10)}</div></div>
+ <div class="ct-bar"><span class="ct-t">قد تم الاتفاق بين الطرفين على عقد المقاولة بالشروط الآتية</span></div>
+ <ol class="ct-c">
+ <li><b>أولاً:</b> يعترف الفريق الأول بأنه قد باع إلى الفريق الثاني الملك المفصّل فيما يلي:<br>نوع الملك ${FL(c.propType,8)} المساحة ${FL(c.size,6)} رقم التسلسل ${FL(c.serial,7)} العنوان ${FL(c.propAddr,12)}</li>
+ <li><b>ثانياً:</b> إن بدل البيع المتفق عليه وهو ${FM(c.price,12)} دينار ${num(c.price)?`<span class="mute-p">(${esc(inWords(c.price))})</span>`:''}</li>
+ <li><b>ثالثاً:</b> يعترف الفريق الأول بأنه قد قبض من الفريق الثاني عربوناً قدره ${FM(c.deposit,10)} دينار، الباقي ${FM(c.remain,10)} دينار يتم تسديده بتاريخ ${FD(c.remainDate)}</li>
+ <li><b>رابعاً:</b> إذا امتنع الفريق الأول عن إجراء التقرير وإذا نكل عن البيع بأية صورة كانت فإنه ملزم بإعادة العربون ويتعهد بتأدية تضمينات إلى الفريق الثاني وقدرها ${FM(c.sPen,10)} دينار.</li>
+ <li><b>خامساً:</b> يعترف الفريق الثاني بأنه قد قبل الشراء بالشروط المذكورة آنفاً ويتعهد بتأدية قصور بدل البيع إلى الفريق الأول عند إكمال المعاملة والتقرير في دائرة التسجيل العقاري، وإذا نكل عن الشراء وتأدية قصور البدل فإنه ملزم بتأدية تضمينات قدرها ${FM(c.bPen,10)} دينار بدون حاجة إلى إنذار رسمي وليس له الحق بالمطالبة بالعربون، وإن الفريق الثاني أن يقرر الملك باسم من يشاء.</li>
+ <li><b>سادساً:</b> يتعهد الفريقان بأن يدفع كل واحد منهما دلالية قدرها (<span class="num">${esc(c.comm??2)||'&nbsp;&nbsp;'}%</span>) إلى الدلال الذي توسّط بعقد البيع وبعد التوقيع على هذه المقاولة، وإذا نكل أحد الطرفين عن تنفيذ شروط هذا العقد يتعهد بتأدية ضعفي الدلالية المذكورة أعلاه، كما وأنه في حالة وقوع تراضٍ بين الفريقين على إبطال هذا العقد فإنهما يكونا ملزمين بتأدية الدلالية مهما بلغت.</li></ol>
+ <p class="ct-d">وبناءً على حصول التراضي والإيجاب والقبول حُرّر هذا العقد بتاريخ ${FD(c.date)} الساعة ${FL(c.time,6)}</p>
+ <div class="ct-two"><ol class="ct-n"><li>يتعهد البائع بأصوليات وأوليات العقار وتحويله إلى المشتري وكذلك بإجراء الوكالة.</li><li>يتعهد البائع بتسديد الإضبارة الشخصية إن وجدت في الضريبة الخاصة بالطرف الأول.</li><li>يتعهد البائع بتسديد الماء والكهرباء وضريبة العقار إن وجدت.</li></ol>
+ <div class="ct-note">ملاحظة: المكتب وسيط وليس كفيل</div></div>
+ <h4 class="ct-x">فقرات إضافية وشروط</h4><ol class="ct-ex">${extraLines(c,2).map(l=>`<li>${l?esc(l):'<span class="fl e" style="width:95%"></span>'}</li>`).join('')}</ol>
+ ${ctSigs([['الطرف الأول (البائع)',c.sName],['الشاهد',c.w1],['الشاهد',c.w2],['الطرف الثاني (المشتري)',c.bName]])}`}
+function rentSheet(c){return`${ctHead()}
+ <div class="ct-bar"><span class="ct-no num">${padNo(c.no)||'&nbsp;'}</span><span class="ct-t big">عقد إيجار</span></div>
+ <div class="ct-p"><div>الطرف الأول (المؤجر) ${FL(c.lName,18)} الموبايل ${FL(c.lPhone,10)}</div><div>الطرف الثاني (المستأجر) ${FL(c.tName,17)} الموبايل ${FL(c.tPhone,10)}</div></div>
+ <div class="ct-bar"><span class="ct-t">لقد تم الاتفاق بين الطرفين على عقد إيجار العقار المدرجة تفاصيله أدناه وبالشروط الآتية</span></div>
+ <div class="ct-c">
+ <p><b>أولاً:</b> اسم المؤجر ${FL(c.lName,10)} عنوانه الكامل ${FL(c.lAddr,10)} رقم الهوية ${FL(c.lId,7)}</p>
+ <p>يعترف الطرف الأول بتأجير العقار المذكور أدناه للطرف الثاني المذكور اسمه وعنوانه أدناه بالتفاصيل المدرجة والمبيّنة:<br>نوع العقار ${FL(c.propType,8)} موقع العقار ${FL(c.propLoc,12)} رقم العقار ${FL(c.propNo,7)}</p>
+ <p><b>ثانياً:</b> اسم المستأجر ${FL(c.tName,10)} عنوانه الكامل ${FL(c.tAddr,10)} رقم الهوية ${FL(c.tId,7)}</p>
+ <p>تم الاتفاق على قيمة الإيجار والبالغ: رقماً ${FM(c.rent,9)} دينار، كتابةً ${FL(c.rentWords,18)}</p>
+ <p>وتم قبض عربون قيمته ${FM(c.deposit,10)} دينار</p>
+ <p>ابتداءً من تاريخ ${FD(c.from)} إلى نهاية تاريخ ${FD(c.to)}</p>
+ <p>وعند ختام مدة الإيجار إن المستأجر ملزم بتخلية المأجور وتسليمه إلى المؤجر خالياً من الشواغل، وإذا تأخر عن ذلك فيكون ملزماً بأن يدفع عن مدة التأخير إيجاراً يومياً قدره ${FM(c.late,9)} دينار من غير حاجة إلى إنذار رسمي.</p>
+ <p>إن ضريبة الأملاك على المؤجر أو صاحب ${FL('',8)} ورسوم الماء والكهرباء والحراسة والتنظيف فهي على المستأجر يدفعها منتظماً من خالص ماله وعلاوة على بدل الإيجار المحرر أعلاه، وأن يسلّم الوصولات إلى المؤجر عند الطلب، وعليه أن يسلّم كافة المصابيح الكهربائية والزجاج والمؤسسات الأخرى المذكورة في هذه الورقة سالمة كما استلمها.</p>
+ ${extraLines(c,1).map(l=>`<p>${l?esc(l):'<span class="fl e" style="width:95%"></span>'}</p>`).join('')}
+ <p>كُتب على ثلاث نسخ بيد كل من الفريقين نسخة. حُرّر بتاريخ ${FD(c.date)}</p></div>
+ ${ctSigs([['المستأجر',c.tName],['المؤجر',c.lName],['الشاهد',c.w1],['الشاهد',c.w2]])}`}
+function printView(c){let pv=$('#print');if(!pv){pv=document.createElement('div');pv.id='print';document.body.append(pv)}
+ pv.innerHTML=`<div class="bar"><button class="btn gold" id="pgo">طباعة / حفظ PDF</button><button class="btn" id="pback">رجوع</button></div><div class="ct-wrap"><div class="ct">${c.type==='rent'?rentSheet(c):saleSheet(c)}</div></div>`;
+ document.body.classList.add('printing');const close=()=>{pv.remove();document.body.classList.remove('printing')};
+ $('#pback',pv).onclick=close;$('#pgo',pv).onclick=()=>{try{window.print()}catch(e){toast('الطباعة غير متاحة هنا، افتح الصفحة بالمتصفح')}};
+ pv.addEventListener('keydown',e=>{if(e.key==='Escape')close()});$('#pgo',pv).focus()}
+
+function settings(){const s=S.settings;return`<h1>الإعدادات</h1><form id="setf" class="card grid"><h3>بيانات المكتب (تظهر بصفحة الزبون)</h3><div class="grid g3">${fld('officeName','اسم المكتب',s.officeName,{req:1})}${fld('phone','رقم الهاتف',s.phone,{type:'tel'})}${fld('whatsapp','رقم الواتساب',s.whatsapp,{type:'tel',ph:'9647xxxxxxxxx'})}</div>
+ <h3>ترويسة العقود المطبوعة</h3><div class="grid g2">${fld('ctTag','الوصف تحت الاسم',s.ctTag)}${fld('ctAddr','عنوان المكتب (بالعقود وصفحة الزبون)',s.ctAddr)}${fld('ctMgr','بإدارة',s.ctMgr)}${fld('ctPhone','رقم الهاتف بالعقد',s.ctPhone,{type:'tel'})}</div>
+  <h3>واجهة الزبون</h3><div class="grid g2"><div><label for="f_featMode">حركة العقارات المميزة</label><select id="f_featMode" name="featMode">${opts(FMODES,s.featMode||'tamata')}</select></div>${fld('featSpeed','سرعة التبديل (ثواني لكل عقار)',s.featSpeed||5,{type:'number'})}</div>
+ <div><span class="small mute">معاينة الحركة المختارة:</span><div id="fsPv" style="margin-top:8px">${fsPreview(s.featMode||'tamata')}</div></div>
+ <div><label for="f_about">نبذة عنا (تظهر بقسم «من نحن»)</label><textarea id="f_about" name="about">${esc(s.about)}</textarea></div>
+ <div class="grid g2">${fld('tiktok','رابط تيك توك',s.tiktok,{ph:'https://www.tiktok.com/@...'})}${fld('instagram','رابط انستغرام',s.instagram,{ph:'https://instagram.com/...'})}${fld('facebook','رابط فيسبوك',s.facebook,{ph:'https://facebook.com/...'})}${fld('mapsUrl','رابط موقع المكتب على Google Maps (لزر الاتجاهات)',s.mapsUrl,{ph:'الصق رابط المكتب من Google Maps'})}</div>
+ <div class="ce-pick"><b>نقطة المكتب على الخريطة</b><div class="grid g2" style="align-items:end"><div><label for="f_officeLL">إحداثيات المكتب</label><input id="f_officeLL" name="officeLL" value="${esc(s.officeLL)}" dir="ltr" placeholder="مثال: 31.8356, 47.1450"></div><button type="button" class="btn gold" id="offGeo">${IC.map} موقعي الحالي (وانت بالمكتب)</button></div>
+ <span class="small mute">هذي النقطة تطلع بخريطة «موقعنا» بصفحة الزبون. اضغط الزر وانت داخل المكتب، أو من Google Maps اضغط مطوّلاً على المكتب وانسخ الأرقام اللي تطلع والصقها هنا. إذا تركتها فارغة، الصفحة تعرض زر يفتح رابط الموقع بدل الخريطة.</span><div id="offPv"></div></div>
+ <h3>البكسل والإعلانات</h3><p class="small mute" style="margin:0">ضع رقم بكسل ميتا (فيسبوك/انستغرام) أو معرّف Google حتى تنسجل زيارات صفحة الزبون بحساباتكم الإعلانية وتگدرون تستهدفون نفس الزوار بإعلان ثاني.</p><div class="grid g2">${fld('metaPixel','Meta Pixel ID',s.metaPixel,{ph:'مثال: 123456789012345'})}${fld('gtagId','Google Tag ID',s.gtagId,{ph:'مثال: G-XXXXXXX أو AW-XXXXXXX'})}</div>
+ <h3>تصنيفات الحسابات</h3><div class="grid g2"><div><label for="f_ic">تصنيفات الإيرادات (كل سطر تصنيف)</label><textarea id="f_ic" name="incomeCats">${esc(s.incomeCats.join('\n'))}</textarea></div><div><label for="f_ec">تصنيفات المصروفات (كل سطر تصنيف)</label><textarea id="f_ec" name="expenseCats">${esc(s.expenseCats.join('\n'))}</textarea></div></div>
+ <div><button class="btn pri" type="submit">حفظ الإعدادات</button></div></form>`}
+
+/* ---------- STORE ---------- */
+const isDone=p=>p.status==='مباع'||p.status==='مؤجر';
+const featuredList=()=>S.properties.filter(p=>p.published!==false&&p.featured&&!isDone(p)).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+function ticker(){const F=featSlides();if(!F.length)return'';
+ const item=p=>{const ph=photosOf(p.id)[0];return`<button class="tk-i" data-view="${p.id}">${ph?`<img src="${ph.data}" alt="">`:`<img class="tw" src="${TOWER}" alt="">`}<span class="tk-star">${featuredList().length?'مميز':'جديد'}</span><b>${esc(p.title)}</b><span class="tk-p">${IQD(p.price)}</span><span class="tk-m">${esc(p.purpose)} · ${esc(p.area||p.gov)}</span></button>`};
+ const k=Math.ceil(6/F.length),half=Array(k).fill(F.map(item).join('')).join('');
+ return`<div class="tk" role="region" aria-label="عقارات مميزة"><span class="tk-lbl">${featuredList().length?'★ عقارات مميزة':'أحدث العقارات'}</span><div class="tk-vp"><div class="tk-tr" style="animation-duration:${F.length*k*7}s"><div class="tk-h">${half}</div><div class="tk-h" inert aria-hidden="true">${half}</div></div></div></div>`}
+function heroStack(){let F=featuredList().filter(p=>photosOf(p.id).length);
+ if(!F.length)F=S.properties.filter(p=>p.published!==false&&!isDone(p)&&photosOf(p.id).length).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+ F=F.slice(0,3);if(!F.length)return`<div class="h3d"><img class="tower" src="${TOWER}" alt=""></div>`;
+ return`<div class="h3d">${F.map((p,i)=>`<button class="hc hc${i}" data-view="${p.id}"><img src="${photosOf(p.id)[0].data}" alt="${esc(p.title)}"><span><b>${esc(p.title)}</b>${IQD(p.price)}</span></button>`).join('')}</div>`}
+function storeView(){const s=S.settings,all=S.properties.filter(p=>p.published!==false);
+ const q=UI.sq.trim(),L=all.filter(p=>(!UI.sp||p.purpose===UI.sp)&&(!UI.st||p.type===UI.st)&&(!UI.sg||p.gov===UI.sg)&&(!q||[p.title,p.area,p.desc,p.code].join(' ').includes(q)))
+  .sort((a,b)=>(isDone(a)-isDone(b))||(!!b.featured-!!a.featured)||(b.createdAt||0)-(a.createdAt||0));
+ const av=all.filter(p=>p.status==='متاح').length,sold=all.filter(p=>p.status==='مباع').length,rent=all.filter(p=>p.purpose==='إيجار'&&!isDone(p)).length;
+ const fm=s.featMode||'tamata';
+ return `${fm==='ticker'?ticker():''}<header class="st-top"><img src="${LOGO}" alt="${esc(s.officeName)}"><nav class="st-nav" aria-label="أقسام الصفحة"><button data-scroll="plist-top">العقارات</button><button data-scroll="about">من نحن</button><button data-scroll="contact">تواصل معنا</button><button data-scroll="location">موقعنا</button></nav><div class="row">${s.whatsapp?`<a class="btn gold" data-trk="wa" href="https://wa.me/${waNum(s.whatsapp)}" target="_blank" rel="noopener">واتساب</a>`:''}${s.phone?`<a class="btn pri" data-trk="tel" href="tel:${esc(s.phone)}">اتصل<span class="lbl-n">:</span> <span class="num">${esc(s.phone)}</span></a>`:''}</div></header>
+ ${fm!=='ticker'&&featSlides().length?`<section class="feat">${featStage(fm)}</section>`:''}<section class="hero"><div><h1>${esc(s.officeName)}</h1><p>بيع وشراء وإيجار الدور والأراضي السكنية والزراعية — أسعار معلنة، مواصفات واضحة، وصور حقيقية لكل عقار.</p>
+ <div class="stats"><div><b class="num">${av}</b><span>عقار متاح</span></div><div><b class="num">${rent}</b><span>للإيجار</span></div><div><b class="num">${sold}</b><span>تم بيعه</span></div></div></div>${fm==='ticker'?heroStack():`<div class="h3d"><img class="tower" src="${TOWER}" alt=""></div>`}</section>
+ <div class="band" style="padding-top:0"><div class="sbox"><div class="seg" role="group" aria-label="بيع أو إيجار">${[['','الكل'],['بيع','بيع'],['إيجار','إيجار']].map(([v,t])=>`<button type="button" data-spv="${v}" class="${UI.sp===v?'on':''}" aria-pressed="${UI.sp===v}">${t}</button>`).join('')}</div>
+ <select id="st" aria-label="النوع">${opts(TYPES,UI.st,'كل الأنواع')}</select><select id="sg" aria-label="المحافظة">${opts(GOVS,UI.sg,'كل المحافظات')}</select><input id="sq" placeholder="ابحث باسم العقار أو المنطقة أو الكود MR" value="${esc(UI.sq)}" aria-label="بحث"></div>
+ <div class="sec-h" id="plist-top"><h2>${UI.sp?'عقارات لل'+(UI.sp==='بيع'?'بيع':'إيجار'):'كل العقارات'}</h2><span class="mute small"><span class="num">${L.length}</span> عقار</span></div>
+ <div id="slist">${!loaded?'<div class="empty">جاري التحميل…</div>':propCards(L,false)}</div></div>
+ ${storeInfo(s)}<footer class="st-foot"><b>${esc(s.officeName)}</b>${s.ctAddr?`<span>${esc(s.ctAddr)}</span>`:''}${s.phone?`<span class="num">${esc(s.phone)}</span>`:''}</footer>${sideCta(s)}`}
+function storeDetail(id){const p=byId('properties',id);if(!p)return;const s=S.settings,ph=photosOf(id),done=p.status==='مباع'||p.status==='مؤجر';
+ const wa=s.whatsapp?`https://wa.me/${waNum(s.whatsapp)}?text=${encodeURIComponent('استفسار عن: '+p.title+' ('+p.code+')')}`:'';
+ track('view',{pid:id});const md=openModal(`<header><div><span class="small mute num">${esc(p.code)}</span><h2>${esc(p.title)}</h2></div><button class="x" data-close aria-label="إغلاق">×</button></header>${gallery(ph)}
+ <div class="row"><span class="tag">${esc(p.type)}</span><span class="tag">${esc(p.purpose)}</span>${done?`<span class="tag t-gold">${pubLabel(p.status)}</span>`:p.status==='محجوز'?stTag('محجوز'):''}</div>
+ <div class="price" style="font-size:26px;font-weight:700;color:var(--gold-d)">${IQD(p.price)}${p.priceType==='للمتر'?' <span class="small mute">للمتر</span>':''} ${p.nego==='قابل للتفاوض'?'<span class="small mute">قابل للتفاوض</span>':''}</div>
+ <div class="calc"><div><span>الموقع</span><span>${esc(p.gov)}، ${esc(p.area)}</span></div><div><span>المساحة</span><span><span class="num">${fmt(p.size)}</span> م²</span></div>
+ ${num(p.rooms)?`<div><span>الغرف</span><span class="num">${fmt(p.rooms)}</span></div>`:''}${num(p.baths)?`<div><span>الحمامات</span><span class="num">${fmt(p.baths)}</span></div>`:''}${num(p.year)?`<div><span>سنة البناء</span><span class="num">${p.year}</span></div>`:''}${p.furn&&p.type!=='أرض'?`<div><span>التأثيث</span><span>${esc(p.furn)}</span></div>`:''}</div>
+ ${p.desc?`<p style="white-space:pre-line">${esc(p.desc)}</p>`:''}
+ ${p.mapUrl?(()=>{const ll=parseLL(p.mapUrl);return`<div class="grid" style="gap:8px"><h3>الموقع على الخريطة</h3>${ll?mapEmbed(ll):''}<a class="btn" data-trk="maps" data-pid="${p.id}" href="${esc(mapOpen(ll,p.mapUrl))}" target="_blank" rel="noopener">${IC.map} افتح الموقع بـ Google Maps</a></div>`})():''}
+ ${done?'':`<div class="row">${wa?`<a class="btn gold" data-trk="wa" data-pid="${p.id}" href="${wa}" target="_blank" rel="noopener">استفسار واتساب</a>`:''}${s.phone?`<a class="btn" data-trk="tel" data-pid="${p.id}" href="tel:${esc(s.phone)}">اتصال: <span class="num">${esc(s.phone)}</span></a>`:''}</div>`}`);bindGallery(md,ph)}
+
+/* ---------- featured motion (10 styles) ---------- */
+const FMODES=[['tamata','بانرات بأسلوب طماطة'],['slide','انزلاق أفقي'],['fade','تلاشي ناعم'],['kenburns','تكبير سينمائي'],['coverflow','كفر فلو ثلاثي الأبعاد'],['cube','مكعب يدور'],['stack','بطاقات متراكبة'],['flip','قلب البطاقة'],['ring','دوّارة ثلاثية الأبعاد'],['ticker','شريط متحرك أعلى الصفحة']];
+UI.fi=0;
+const latestAvail=()=>S.properties.filter(p=>p.published!==false&&!isDone(p)).sort((a,b)=>(!!photosOf(b.id).length-!!photosOf(a.id).length)||(b.createdAt||0)-(a.createdAt||0)).slice(0,6);
+function featSlides(){const F=featuredList();return F.length?F:latestAvail()}
+function featStage(mode,preview){const F=featSlides();if(!F.length)return preview?'<div class="note small">ماكو عقارات منشورة بعد.</div>':'';const fb=!featuredList().length;
+ return`<div class="fs" data-mode="${mode}" ${preview?'id="fsPreview"':''} role="region" aria-roledescription="carousel" aria-label="عقارات مميزة">
+ ${F.map((p,i)=>{const ph=photosOf(p.id)[0];return`<article class="fsl" data-i="${i}" data-view="${p.id}" tabindex="-1"><div class="fsi">${ph?`<img src="${ph.data}" alt="${esc(p.title)}">`:`<img class="tw" src="${TOWER}" alt="">`}</div>
+ <div class="fsc"><span class="fsb">${fb?'جديد':'★ مميز'} · ${esc(p.purpose)}</span><h3>${esc(p.title)}</h3><span class="fsm">${esc(p.type)} · ${esc(p.gov)}، ${esc(p.area)}${num(p.size)?` · <span class="num">${fmt(p.size)}</span> م²`:''}</span><b class="fsp">${IQD(p.price)}</b><span class="btn gold sm">التفاصيل</span></div></article>`}).join('')}
+ ${F.length>1?`<button class="fsn prev" data-fsgo="-1" aria-label="السابق">›</button><button class="fsn next" data-fsgo="1" aria-label="التالي">‹</button><div class="fsd">${F.map((_,i)=>`<button data-fsdot="${i}" aria-label="عقار ${i+1}"></button>`).join('')}</div>`:''}</div>`}
+function applyFs(){document.querySelectorAll('.fs').forEach(st=>{const L=[...st.querySelectorAll('.fsl')],n=L.length;if(!n)return;const cur=((UI.fi%n)+n)%n;
+ st.style.setProperty('--hw',st.offsetWidth/2+'px');st.style.setProperty('--R',Math.round(st.offsetWidth*.55)+'px');st.style.setProperty('--sp',(num(S.settings.featSpeed)||5)+'s');
+ L.forEach((el,i)=>{let o=i-cur;if(o>n/2)o-=n;if(o<-n/2)o+=n;const a=Math.abs(o),far=a>2;el.style.setProperty('--o',far?Math.sign(o)*3:o);el.style.setProperty('--a',far?3:a);el.dataset.o=far?'far':String(o);el.setAttribute('aria-hidden',o!==0);el.tabIndex=o===0?0:-1});
+ st.querySelectorAll('[data-fsdot]').forEach((d,i)=>d.classList.toggle('on',i===cur))})}
+let fsTimer=null,fsHold=false;
+function fsRestart(){clearInterval(fsTimer);fsTimer=setInterval(()=>{if(fsHold||document.hidden||!document.querySelector('.fs'))return;if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;UI.fi++;applyFs()},(num(S.settings.featSpeed)||5)*1000)}
+fsRestart();
+document.addEventListener('pointerover',e=>{fsHold=!!e.target.closest?.('.fs')});
+document.addEventListener('click',e=>{const g=e.target.closest('[data-fsgo],[data-fsdot]');if(!g)return;e.stopPropagation();if(g.dataset.fsgo)UI.fi+=+g.dataset.fsgo;else UI.fi=+g.dataset.fsdot;applyFs();fsRestart()},true);
+let fsX=null;document.addEventListener('pointerdown',e=>{if(e.target.closest('.fs'))fsX=e.clientX});
+document.addEventListener('pointerup',e=>{if(fsX==null)return;const dx=e.clientX-fsX;fsX=null;if(Math.abs(dx)>45){UI.fi+=dx>0?1:-1;applyFs();fsRestart();fsSwiped=Date.now()}});
+let fsSwiped=0;document.addEventListener('click',e=>{const s=e.target.closest('.fsl');if(s&&s.dataset.o!=='0'){e.stopPropagation();e.preventDefault();UI.fi=+s.dataset.i;applyFs();fsRestart()}},true);
+document.addEventListener('click',e=>{if(Date.now()-fsSwiped<350&&e.target.closest('.fs')){e.stopPropagation();e.preventDefault()}},true);
+addEventListener('resize',applyFs);
+
+function fsPreview(m){const note=featuredList().length?'':'<p class="small mute" style="margin:0 0 8px">ماكو عقار معلّم «مميز»، فالسلايدر يعرض أحدث العقارات المتاحة. علّم العقارات اللي تريدها بنموذج العقار حتى تطلع هي بداله.</p>';return note+(m==='ticker'?(ticker()||'<div class="note small">ماكو عقارات منشورة بعد.</div>')+'<p class="small mute">الشريط يطلع أعلى صفحة الزبون.</p>':featStage(m,true))}
+function offPv(){const pv=$('#offPv'),inp=$('#f_officeLL');if(!pv||!inp)return;const ll=parseLL(inp.value);pv.innerHTML=ll?`<div class="small t-ok">✓ النقطة محددة: <span class="num">${ll[0].toFixed(5)}, ${ll[1].toFixed(5)}</span></div>${mapEmbed(ll)}`:inp.value.trim()?'<div class="small t-bad">الصيغة مو صحيحة — اكتبها مثل: 31.8356, 47.1450</div>':''}
+document.addEventListener('input',e=>{if(e.target.id==='f_officeLL')offPv()});
+document.addEventListener('click',e=>{const b=e.target.closest('#offGeo');if(!b)return;if(!navigator.geolocation)return toast('المتصفح ما يدعم تحديد الموقع');b.disabled=true;
+ navigator.geolocation.getCurrentPosition(p=>{const i=$('#f_officeLL');if(i){i.value=p.coords.latitude.toFixed(6)+', '+p.coords.longitude.toFixed(6);offPv()}b.disabled=false;toast('انضاف موقع المكتب — لا تنسى تضغط حفظ الإعدادات')},err=>{b.disabled=false;toast(err.code===1?'لازم تسمح للمتصفح بالوصول للموقع':'تعذر تحديد الموقع، الصق الإحداثيات بدالها')},{enableHighAccuracy:true,timeout:15000})});
+document.addEventListener('change',e=>{if(e.target.id==='f_featMode'){const pv=$('#fsPv');if(pv){pv.innerHTML=fsPreview(e.target.value);applyFs()}}});
+document.addEventListener('input',e=>{if(e.target.id==='f_featSpeed'){const v=num(e.target.value);if(v>=2){S.settings.featSpeed=v;applyFs();fsRestart()}}});
+
+/* stale-listing reminders */
+const STALE_DAYS=30;
+const pAge=p=>Math.floor((Date.now()-(p.createdAt||p.updatedAt||Date.now()))/864e5);
+const isStale=p=>!isDone(p)&&pAge(p)>=STALE_DAYS&&!(num(p.snoozeUntil)>Date.now());
+const staleList=()=>S.properties.filter(isStale).sort((a,b)=>pAge(b)-pAge(a));
+function staleCard(){const L=staleList();if(!L.length)return'';
+ return`<div class="card remind" role="region" aria-label="تذكيرات"><div class="row between"><h3>⏰ تذكير: ${L.length} ${L.length===1?'عقار':'عقارات'} صار لها أكثر من شهر وما انباعت</h3><button class="btn sm" data-stalego>عرضها بالعقارات</button></div>
+ <div class="rlist">${L.slice(0,8).map(p=>`<div class="ritem"><div><b>${esc(p.title)}</b><div class="small mute"><span class="num">${esc(p.code)}</span> · ${esc(p.purpose)} · ${IQD(p.price)} · ${esc(p.status)}</div></div>
+ <span class="rdays"><b class="num">${pAge(p)}</b> يوم</span><div class="row" style="flex-wrap:nowrap"><button class="btn sm gold" data-prop="${p.id}">فتح</button><button class="btn sm" data-snooze="${p.id}" title="ما يذكرك بيه لمدة أسبوعين">تأجيل أسبوعين</button></div></div>`).join('')}</div>
+ ${L.length>8?`<p class="small mute" style="margin:8px 0 0">و${L.length-8} غيرها…</p>`:''}<p class="small mute" style="margin:8px 0 0">فكّر تراجع السعر، تحدّث الصور، أو تعلّمه "مميز" حتى يطلع بأعلى صفحة الزبون.</p></div>`}
+document.addEventListener('click',async e=>{const s=e.target.closest('[data-snooze],[data-stalego],[data-stalef]');if(!s)return;e.stopPropagation();
+ if(s.dataset.snooze){if(readOnly)return toast('ما عندك صلاحية تعديل');const p=byId('properties',s.dataset.snooze);if(!p)return;const r={...p,snoozeUntil:Date.now()+14*864e5};delete r.id;try{await put('properties',p.id,r);toast('ينذكرك بيه بعد أسبوعين')}catch(_){};return}
+ if('stalego' in s.dataset){UI.stale=true;UI.sec='props';render();scrollTo(0,0);return}
+ if('stalef' in s.dataset){UI.stale=!UI.stale;render()}},true);
+/* ---------- icons ---------- */
+const IC={
+ wa:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M12 3a9 9 0 0 0-7.8 13.5L3 21l4.6-1.2A9 9 0 1 0 12 3z"/><path fill="currentColor" d="M9.2 7.6c.2 0 .4 0 .6.4l.8 1.8c.1.2 0 .4-.1.6l-.6.7c.6 1.2 1.6 2.2 2.9 2.9l.7-.6c.2-.2.4-.2.6-.1l1.8.8c.3.2.4.4.3.7-.2 1-1.1 1.7-2.1 1.6-3.2-.4-5.9-3.1-6.3-6.3-.1-1 .5-1.9 1.4-2.1z"/></svg>',
+ tel:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1z"/></svg>',
+ ig:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5" fill="none" stroke="currentColor" stroke-width="1.9"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.9"/><circle cx="17.2" cy="6.8" r="1.2" fill="currentColor"/></svg>',
+ fb:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M13.5 21v-7.5h2.6l.4-3.1h-3V8.5c0-.9.3-1.5 1.6-1.5h1.6V4.2c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4v2.3H7.9v3.1h2.6V21z"/></svg>',
+ tt:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M15.8 3c.3 2.3 1.8 3.9 4.2 4.1v3.1c-1.5.1-2.9-.4-4.2-1.2v5.8a5.6 5.6 0 1 1-5.6-5.6c.3 0 .6 0 .9.1v3.2a2.5 2.5 0 1 0 1.7 2.3V3z"/></svg>',
+ map:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.6A2.6 2.6 0 1 1 12 6.4a2.6 2.6 0 0 1 0 5.2z"/></svg>'};
+
+/* ---------- maps ---------- */
+function parseLL(u){u=String(u||'').trim();if(!u)return null;let m=/@(-?\d{1,2}\.\d+),\s*(-?\d{1,3}\.\d+)/.exec(u)||/!3d(-?\d{1,2}\.\d+)!4d(-?\d{1,3}\.\d+)/.exec(u)||/[?&](?:q|query|ll|destination|center)=(-?\d{1,2}\.\d+)(?:,|%2C)\s*(-?\d{1,3}\.\d+)/i.exec(u)||/^(-?\d{1,2}\.\d+)\s*[, ]\s*(-?\d{1,3}\.\d+)$/.exec(u);
+ return m?[+m[1],+m[2]]:null}
+const mapOpen=(ll,url,q)=>url&&/^https?:\/\//.test(url)?url:ll?`https://www.google.com/maps?q=${ll[0]},${ll[1]}`:`https://www.google.com/maps/search/${encodeURIComponent(q||'')}`;
+const mapEmbed=(ll,q)=>`<iframe class="mapf" title="الموقع على الخريطة" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://maps.google.com/maps?q=${ll?ll[0]+','+ll[1]:encodeURIComponent(q||'')}&z=${ll?16:14}&hl=ar&output=embed"></iframe>`;
+function propMapField(p){return`<fieldset><legend>الموقع على خرائط Google</legend>
+ <div><label for="f_mapUrl">رابط الموقع أو الإحداثيات</label><input id="f_mapUrl" name="mapUrl" value="${esc(p.mapUrl)}" placeholder="الصق رابط Google Maps هنا، أو إحداثيات مثل 31.8356, 47.1450" dir="ltr"></div>
+ <div class="row"><button type="button" class="btn sm gold" id="geoBtn">${IC.map} إضافة موقعي الحالي</button><button type="button" class="btn sm" id="gmOpen">فتح Google Maps للبحث</button><button type="button" class="btn sm danger" id="gmClear">مسح الموقع</button></div>
+ <div id="mapPv" class="mappv"></div>
+ <p class="small mute" style="margin:0">«موقعي الحالي» يسجل مكانك وانت واگف بالعقار. أو افتح Google Maps، حدد العقار، اضغط مشاركة ← نسخ الرابط، والصقه هنا.</p></fieldset>`}
+function bindPropMap(md){const f=$('#pf',md),inp=f.mapUrl,pv=$('#mapPv',md);
+ const draw=()=>{const ll=parseLL(inp.value);pv.innerHTML=ll?`<div class="row between small"><span class="t-ok">✓ تم تحديد الموقع: <span class="num">${ll[0].toFixed(5)}, ${ll[1].toFixed(5)}</span></span><a class="btn sm" href="${mapOpen(ll)}" target="_blank" rel="noopener">فتح بالخريطة</a></div>${mapEmbed(ll)}`
+  :inp.value.trim()?`<div class="row between small"><span class="t-warn">الرابط انحفظ (رابط مختصر، ما تطلع معاينة بس يفتح الموقع)</span><a class="btn sm" href="${esc(inp.value.trim())}" target="_blank" rel="noopener">تجربة الرابط</a></div>`:''};
+ inp.addEventListener('input',draw);draw();
+ $('#gmOpen',md).onclick=()=>window.open(mapOpen(null,null,[f.area?.value,f.gov?.value,'العراق'].filter(Boolean).join(' ')),'_blank','noopener');
+ $('#gmClear',md).onclick=()=>{inp.value='';draw()};
+ $('#geoBtn',md).onclick=()=>{if(!navigator.geolocation)return toast('المتصفح ما يدعم تحديد الموقع');const b=$('#geoBtn',md);b.disabled=true;b.lastChild.textContent=' جاري التحديد…';
+  navigator.geolocation.getCurrentPosition(pos=>{inp.value=pos.coords.latitude.toFixed(6)+', '+pos.coords.longitude.toFixed(6);draw();b.disabled=false;b.lastChild.textContent=' إضافة موقعي الحالي';toast('انضاف موقعك الحالي')},
+  err=>{b.disabled=false;b.lastChild.textContent=' إضافة موقعي الحالي';toast(err.code===1?'لازم تسمح للمتصفح بالوصول للموقع':'تعذر تحديد الموقع، الصق الرابط بدالها')},{enableHighAccuracy:true,timeout:15000})}}
+
+/* ---------- store: about / contact / location ---------- */
+function socialRow(s){const L=[['tiktok','tt','تيك توك'],['instagram','ig','انستغرام'],['facebook','fb','فيسبوك']].filter(([k])=>s[k]);
+ const mp=s.mapsUrl||s.officeLL;return`<div class="soc">${L.map(([k,i,t])=>`<a class="s-${k}" href="${esc(s[k])}" target="_blank" rel="noopener" aria-label="${t}" title="${t}" data-trk="${k}">${IC[i]}</a>`).join('')}${mp?`<a class="s-maps" href="${esc(mapOpen(parseLL(s.officeLL)||parseLL(s.mapsUrl),s.mapsUrl,s.ctAddr))}" target="_blank" rel="noopener" aria-label="Google Maps" title="موقعنا على Google Maps" data-trk="maps">${IC.map}</a>`:''}</div>`}
+const waNum=v=>{let d=String(v||'').replace(/\D/g,'');if(d.startsWith('00'))d=d.slice(2);if(d.startsWith('0'))d='964'+d.slice(1);else if(d.length===10&&d.startsWith('7'))d='964'+d;return d};
+const waLink=(s,txt)=>`https://wa.me/${waNum(s.whatsapp)}${txt?'?text='+encodeURIComponent(txt):''}`;
+function storeInfo(s){const ll=parseLL(s.officeLL)||parseLL(s.mapsUrl);return`<section class="info" id="about"><div class="band">
+ <div class="sec-h"><h2>من نحن</h2></div>
+ <div class="abt card"><img src="${TOWER}" alt=""><div><p>${esc(s.about||'').replace(/\n/g,'<br>')}</p>${s.ctMgr?`<p class="mute small">بإدارة ${esc(s.ctMgr)}</p>`:''}</div></div>
+ <div class="grid g2" style="margin-top:22px">
+ <div class="card ccard" id="contact"><h3>تواصل معنا</h3>
+  ${s.phone?`<a class="cbig" data-trk="tel" href="tel:${esc(s.phone)}">${IC.tel}<span><b>اتصال مباشر</b><span class="num">${esc(s.phone)}</span></span></a>`:''}
+  ${s.whatsapp?`<a class="cbig wa" data-trk="wa" href="${waLink(s,'مرحباً، أريد الاستفسار عن عقار')}" target="_blank" rel="noopener">${IC.wa}<span><b>واتساب</b><span>راسلنا وننرد عليك</span></span></a>`:''}
+  <div><span class="small mute">تابعنا</span>${socialRow(s)}</div></div>
+ <div class="card ccard" id="location"><h3>موقعنا</h3><p style="margin:0">${esc(s.ctAddr)}</p>${ll?mapEmbed(ll):`<a class="mapph" href="${esc(mapOpen(null,s.mapsUrl,s.ctAddr))}" target="_blank" rel="noopener" data-trk="maps">${IC.map}<b>${esc(s.officeName)}</b><span>اضغط لفتح موقعنا على الخريطة</span></a>`}
+  <a class="btn" href="${esc(mapOpen(ll,s.mapsUrl,s.ctAddr))}" target="_blank" rel="noopener" data-trk="maps">${IC.map} افتح الاتجاهات بـ Google Maps</a></div></div></div></section>`}
+function sideCta(s){if(!s.whatsapp&&!s.phone)return'';return`<button class="cta-side" data-cpanel aria-expanded="${!!UI.cp}" aria-controls="cpanel">${IC.wa}<span>تواصل معنا</span></button>
+ <div class="cpanel ${UI.cp?'open':''}" id="cpanel" role="dialog" aria-label="تواصل معنا"><div class="row between"><b>تواصل معنا</b><button class="x" data-cpanel aria-label="إغلاق">×</button></div>
+ ${s.phone?`<a class="cbig" data-trk="tel" href="tel:${esc(s.phone)}">${IC.tel}<span><b>اتصال مباشر</b><span class="num">${esc(s.phone)}</span></span></a>`:''}
+ ${s.whatsapp?`<a class="cbig wa" data-trk="wa" href="${waLink(s,'مرحباً، أريد الاستفسار عن عقار')}" target="_blank" rel="noopener">${IC.wa}<span><b>واتساب</b><span>محادثة مباشرة</span></span></a>`:''}
+ ${socialRow(s)}</div>`}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-cpanel]');if(b){UI.cp=!UI.cp;const p=$('#cpanel');if(p)p.classList.toggle('open',UI.cp);document.querySelectorAll('.cta-side').forEach(x=>x.setAttribute('aria-expanded',UI.cp));return}
+ const sc=e.target.closest('[data-scroll]');if(sc){e.preventDefault();document.getElementById(sc.dataset.scroll)?.scrollIntoView({behavior:'smooth',block:'start'})}});
+document.addEventListener('click',e=>{if(UI.cp&&!e.target.closest('#cpanel,[data-cpanel]')){UI.cp=false;$('#cpanel')?.classList.remove('open');document.querySelectorAll('.cta-side').forEach(x=>x.setAttribute('aria-expanded',false));e.stopPropagation();e.preventDefault()}},true);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&UI.cp){UI.cp=false;$('#cpanel')?.classList.remove('open')}});
+
+/* ---------- visitor analytics ---------- */
+const LS={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
+const SS={get:k=>{try{return sessionStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{sessionStorage.setItem(k,v)}catch(e){}}};
+let VID=LS.get('mr_vid');if(!VID){VID='v'+uid();LS.set('mr_vid',VID)}
+let SID=SS.get('mr_sid');if(!SID){SID='s'+uid();SS.set('mr_sid',SID)}
+const LV=[];// local-only events when there is no db
+function markAdmin(){LS.set('mr_admin','1')}
+const isAdminDevice=()=>LS.get('mr_admin')==='1';
+function envInfo(){const ua=navigator.userAgent||'',w=Math.min(screen.width,screen.height);
+ const dev=/iPad|Tablet/i.test(ua)||(/Android/i.test(ua)&&!/Mobile/i.test(ua))?'تابلت':/Mobi|iPhone|Android/i.test(ua)||w<600?'موبايل':'حاسبة';
+ const os=/iPhone|iPad|iOS/i.test(ua)?'iOS':/Android/i.test(ua)?'Android':/Windows/i.test(ua)?'Windows':/Mac OS/i.test(ua)?'macOS':/Linux/i.test(ua)?'Linux':'أخرى';
+ const br=/Instagram/i.test(ua)?'Instagram':/FBAN|FBAV|FB_IAB/i.test(ua)?'Facebook':/Edg\//.test(ua)?'Edge':/OPR\//.test(ua)?'Opera':/Chrome\//.test(ua)?'Chrome':/Safari\//.test(ua)?'Safari':/Firefox\//.test(ua)?'Firefox':'أخرى';
+ const qs=new URLSearchParams(location.search);let src=qs.get('utm_source')||qs.get('src')||'';
+ if(!src){if(/FBAN|FBAV|FB_IAB/i.test(ua)||qs.get('fbclid'))src='facebook';else if(/Instagram/i.test(ua))src='instagram';else if(qs.get('gclid'))src='google ads';else{try{const r=document.referrer&&new URL(document.referrer).hostname;src=r&&r!==location.hostname?r.replace(/^www\./,''):'مباشر'}catch(e){src='مباشر'}}}
+ return{dev,os,br,src,camp:qs.get('utm_campaign')||'',lang:navigator.language||'',scr:screen.width+'x'+screen.height}}
+async function track(type,x={}){if(location.hash!=='#store'||isAdminDevice())return;
+ const now=new Date(),ev={type,vid:VID,sid:SID,ts:Date.now(),date:today(),hour:now.getHours(),...envInfo(),...x};
+ const pr=x.pid&&byId('properties',x.pid);if(pr){ev.code=pr.code||'';ev.title=pr.title||''}
+ pixelEvent(type,pr);const d=await dbReady;
+ if(!d){LV.push(ev);return}try{await d.collection('visits').doc(uid()).set(ev)}catch(e){}}
+let entered=false;function storeEnter(){if(entered||!loaded)return;entered=true;if(!SS.get('mr_v_'+SID)){SS.set('mr_v_'+SID,'1');track('visit')}loadPixels()}
+document.addEventListener('click',e=>{const a=e.target.closest('[data-trk]');if(a)track('contact',{kind:a.dataset.trk,pid:a.dataset.pid||''})},true);
+let pixLoaded=false;
+function loadPixels(){if(pixLoaded||isAdminDevice())return;const s=S.settings;if(!s.metaPixel&&!s.gtagId)return;pixLoaded=true;
+ try{if(s.metaPixel){!function(f,b,e,v,n,t,u){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;u=b.getElementsByTagName(e)[0];u.parentNode.insertBefore(t,u)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init',s.metaPixel);fbq('track','PageView')}}catch(e){}
+ try{if(s.gtagId){const t=document.createElement('script');t.async=true;t.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(s.gtagId);document.head.append(t);window.dataLayer=window.dataLayer||[];window.gtag=function(){dataLayer.push(arguments)};gtag('js',new Date());gtag('config',s.gtagId)}}catch(e){}}
+function pixelEvent(type,pr){try{if(type==='view'&&pr){window.fbq&&fbq('track','ViewContent',{content_ids:[pr.code],content_name:pr.title,content_type:'product',value:num(pr.price),currency:'IQD'});window.gtag&&gtag('event','view_item',{items:[{item_id:pr.code,item_name:pr.title,price:num(pr.price)}],currency:'IQD',value:num(pr.price)})}
+ if(type==='contact'){window.fbq&&fbq('track','Contact');window.gtag&&gtag('event','generate_lead')}}catch(e){}}
+
+/* stats page */
+UI.vr=30;
+async function loadStats(){UI.vsLoading=true;const since=ymd(new Date(Date.now()-(UI.vr-1)*864e5));
+ try{const d=await dbReady;let L;if(d){const snap=await d.collection('visits').where('date','>=',since).get();L=snap.docs.map(x=>x.data())}else L=LV.filter(v=>v.date>=since);UI.vs=L;UI.vsErr=''}
+ catch(e){UI.vs=[];UI.vsErr='تعذر تحميل الإحصائيات حالياً.'}UI.vsLoading=false;if(UI.sec==='stats')render()}
+const countBy=(L,f)=>{const m=new Map;for(const x of L){const k=f(x);if(k==null||k==='')continue;m.set(k,(m.get(k)||0)+1)}return[...m].sort((a,b)=>b[1]-a[1])};
+const listCard=(title,rows,tot)=>`<div class="card"><h3>${title}</h3>${rows.length?rows.slice(0,8).map(([k,v])=>`<div style="margin-top:10px"><div class="row between small"><span>${esc(k)}</span><span class="num">${fmt(v)}</span></div><div class="hbar"><i style="width:${tot?v/tot*100:0}%"></i></div></div>`).join(''):'<p class="mute small">ماكو بيانات بعد</p>'}</div>`;
+function stats(){const top=`<div class="row between"><div><h1>إحصائيات الزوار</h1><p class="mute">زيارات صفحة الزبون ومشاهدات العقارات والتواصل — زيارات الإدارة ما تنحسب.</p></div>
+ <div class="row"><select id="vr" aria-label="الفترة" style="width:auto">${opts([[7,'آخر 7 أيام'],[30,'آخر 30 يوم'],[90,'آخر 90 يوم'],[365,'آخر سنة']],UI.vr)}</select><button class="btn" data-vreload>تحديث</button></div></div>`;
+ if(!UI.vs)return top+'<div class="empty">جاري تحميل الإحصائيات…</div>';
+ const L=UI.vs,V=L.filter(x=>x.type==='visit'),W=L.filter(x=>x.type==='view'),C=L.filter(x=>x.type==='contact');
+ const uniq=new Set(L.map(x=>x.vid)).size,ret=countBy(V,x=>x.vid).filter(x=>x[1]>1).length,contactors=new Set(C.map(x=>x.vid)).size;
+ const days=[];for(let i=Math.min(UI.vr,30)-1;i>=0;i--)days.push(ymd(new Date(Date.now()-i*864e5)));
+ const dv=days.map(d=>({d,v:V.filter(x=>x.date===d).length,w:W.filter(x=>x.date===d).length})),mx=Math.max(1,...dv.map(x=>x.v+x.w));
+ const hours=Array.from({length:24},(_,h)=>L.filter(x=>x.type!=='contact'&&x.hour===h).length),hm=Math.max(1,...hours);
+ const props=countBy(W,x=>x.pid).map(([pid,n])=>{const p=byId('properties',pid),ex=W.find(x=>x.pid===pid);return{pid,n,u:new Set(W.filter(x=>x.pid===pid).map(x=>x.vid)).size,c:C.filter(x=>x.pid===pid).length,code:p?.code||ex?.code||'',title:p?.title||ex?.title||'عقار محذوف'}});
+ const vis=[...countBy(L,x=>x.vid)].map(([vid])=>{const E=L.filter(x=>x.vid===vid).sort((a,b)=>a.ts-b.ts),last=E[E.length-1];
+  return{vid,first:E[0].ts,last:last.ts,visits:new Set(E.map(x=>x.sid)).size,views:[...new Set(E.filter(x=>x.type==='view').map(x=>x.code||x.title))],contact:E.some(x=>x.type==='contact'),src:E[0].src,dev:E[0].dev+' · '+E[0].os,camp:E.find(x=>x.camp)?.camp||''}}).sort((a,b)=>b.last-a.last);
+ const t=ts=>{const d=new Date(ts);return dmy(ymd(d))+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
+ return top+(UI.vsErr?`<div class="note">${UI.vsErr}</div>`:'')+`
+ <div class="grid g4"><div class="card kpi"><span>الزيارات</span><b class="num">${fmt(V.length)}</b><span>${fmt(uniq)} زائر مختلف</span></div>
+ <div class="card kpi"><span>مشاهدات العقارات</span><b class="num">${fmt(W.length)}</b><span>${V.length?(W.length/V.length).toFixed(1):0} مشاهدة لكل زيارة</span></div>
+ <div class="card kpi"><span>تواصل (واتساب واتصال)</span><b class="num">${fmt(C.length)}</b><span>${uniq?Math.round(contactors/uniq*100):0}% من الزوار تواصلوا</span></div>
+ <div class="card kpi"><span>زوار رجعوا مرة ثانية</span><b class="num">${fmt(ret)}</b><span>من ${fmt(uniq)} زائر</span></div></div>
+ <div class="card"><div class="row between"><h3>الزيارات والمشاهدات يومياً</h3><span class="small mute">الذهبي: زيارات + مشاهدات</span></div>
+ <div class="bars">${dv.map(x=>`<div title="${dmy(x.d)}: ${x.v} زيارة، ${x.w} مشاهدة" style="height:${(x.v+x.w)/mx*100}%"></div>`).join('')}</div>
+ <div class="row between small mute"><span class="num">${dmy(days[0])}</span><span class="num">${dmy(days[days.length-1])}</span></div></div>
+ <div class="card"><h3>العقارات الأكثر مشاهدة</h3>${props.length?`<div class="scroll"><table class="stack"><thead><tr><th>الكود</th><th>العقار</th><th class="n">مشاهدات</th><th class="n">زوار مختلفين</th><th class="n">تواصل</th></tr></thead><tbody>${props.slice(0,15).map(x=>`<tr><td class="num">${esc(x.code)}</td><td>${esc(x.title)}</td><td class="n num">${fmt(x.n)}</td><td class="n num">${fmt(x.u)}</td><td class="n num">${fmt(x.c)}</td></tr>`).join('')}</tbody></table></div>`:'<p class="mute small">ماكو مشاهدات بعد</p>'}</div>
+ <div class="grid g3">${listCard('مصادر الزوار',countBy(V,x=>x.src),V.length)}${listCard('الأجهزة',countBy(V,x=>x.dev),V.length)}${listCard('أنظمة التشغيل',countBy(V,x=>x.os),V.length)}</div>
+ <div class="grid g2">${listCard('الحملات الإعلانية (utm_campaign)',countBy(V,x=>x.camp),V.length)}<div class="card"><h3>أوقات النشاط خلال اليوم</h3><p class="small mute" style="margin:4px 0 0">أنسب وقت لنشر الإعلان هو وقت الذروة.</p>
+ <div class="bars" style="height:110px">${hours.map((n,h)=>`<div title="الساعة ${h}:00 — ${n}" style="height:${n/hm*100}%"></div>`).join('')}</div><div class="row between small mute"><span class="num">00</span><span class="num">12</span><span class="num">23</span></div></div></div>
+ <div class="card"><h3>سجل الزوار</h3><p class="small mute" style="margin:4px 0 8px">كل زائر له رقم ثابت على جهازه، حتى تعرف شنو شاف ومنين إجه وهل تواصل. الأسماء ما تبين إلا إذا تواصل الزبون وياكم.</p>
+ ${vis.length?`<div class="scroll"><table class="stack"><thead><tr><th>الزائر</th><th>آخر نشاط</th><th class="n">زيارات</th><th>العقارات اللي شافها</th><th>المصدر</th><th>الجهاز</th><th>تواصل</th></tr></thead><tbody>${vis.slice(0,60).map(v=>`<tr><td class="num">#${esc(v.vid.slice(-5).toUpperCase())}</td><td class="num">${t(v.last)}</td><td class="n num">${v.visits}</td><td>${v.views.length?v.views.map(esc).join('، '):'<span class="mute">—</span>'}</td><td>${esc(v.src)}${v.camp?`<div class="small mute">${esc(v.camp)}</div>`:''}</td><td>${esc(v.dev)}</td><td>${v.contact?'<span class="tag t-ok">نعم</span>':'<span class="mute">لا</span>'}</td></tr>`).join('')}</tbody></table></div>`:'<p class="mute small">ماكو زوار بالفترة هذي</p>'}</div>
+ <div class="note small"><b>للإعلانات:</b> أضف رقم بكسل ميتا أو Google من الإعدادات، وبعدها كل زائر لصفحة الزبون ينضاف لجمهوركم بإدارة الإعلانات وتگدرون تستهدفوه بإعلان ثاني. وحتى تعرف أي إعلان جاب الزبون، خلي رابط الإعلان بهالشكل: <span class="num">…?utm_source=facebook&amp;utm_campaign=اسم-الحملة#store</span></div>`}
+document.addEventListener('change',e=>{if(e.target.id==='vr'){UI.vr=+e.target.value;UI.vs=null;render()}});
+document.addEventListener('click',e=>{if(e.target.closest('[data-vreload]')){UI.vs=null;render()}});
+
+/* ---------- events ---------- */
+document.addEventListener('click',e=>{const sp=e.target.closest('[data-spv]');if(sp){UI.sp=sp.dataset.spv;render();return}
+ const t=e.target.closest('[data-sec],[data-act],[data-prop],[data-view],[data-client],[data-partner],[data-deltx],[data-ctp],[data-cte],[data-ctd],[data-blank]');if(!t)return;
+ if(t.dataset.sec){UI.sec=t.dataset.sec;UI.q='';if(t.dataset.sec!=='ctedit')UI.ct=null;if(t.dataset.sec!=='props')UI.stale=false;if(t.dataset.sec==='stats')UI.vs=null;closeModal();render();scrollTo(0,0);return}
+ if(t.dataset.ctp)return printView(byId('contracts',t.dataset.ctp));if(t.dataset.blank)return printView({type:t.dataset.blank,comm:t.dataset.blank==='sale'?2:''});
+ if(readOnly&&(t.dataset.act||t.dataset.deltx||t.dataset.cte||t.dataset.ctd))return toast('ما عندك صلاحية تعديل');
+ if(t.dataset.cte)return openCt({...byId('contracts',t.dataset.cte),id:t.dataset.cte});if(t.dataset.ctd){const id=t.dataset.ctd;ask('حذف هذا العقد؟','حذف').then(y=>{if(y)drop('contracts',id).then(()=>toast('انحذف العقد'))});return}
+ const a=t.dataset.act;if(a==='newProp')propForm();else if(a==='newTx')txForm();else if(a==='newClient')clientForm();else if(a==='newPartner')partnerForm();else if(a==='newSale')openCt({type:'sale'});else if(a==='newRent')openCt({type:'rent'});
+ else if(t.dataset.prop)propDetail(t.dataset.prop);else if(t.dataset.view)storeDetail(t.dataset.view);else if(t.dataset.client)clientForm(byId('clients',t.dataset.client));else if(t.dataset.partner)partnerDetail(t.dataset.partner);
+ else if(t.dataset.deltx){const id=t.dataset.deltx;ask('حذف هذه الحركة؟','حذف').then(y=>{if(y)drop('tx',id).then(()=>toast('انحذفت'))})}});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.matches('article[tabindex]'))e.target.click()});
+document.addEventListener('input',e=>{const id=e.target.id;if(!id||e.target.closest('#modal'))return;
+ if(['q','ft','fs','fg','fk','sq','st','sp','sg'].includes(id)){UI[id]=e.target.value;
+  if(id==='q'&&UI.sec==='props'){$('#plist').innerHTML=propCards(filteredProps(),true);return}
+  if(id==='sq'){render();return}render()}});
+document.addEventListener('submit',async e=>{if(e.target.id!=='setf')return;e.preventDefault();const d=formData(e.target);
+ const lines=v=>v.split('\n').map(x=>x.trim()).filter(Boolean);await putSettings({officeName:d.officeName,phone:d.phone,whatsapp:d.whatsapp,ctTag:d.ctTag,ctAddr:d.ctAddr,ctMgr:d.ctMgr,ctPhone:d.ctPhone,metaPixel:d.metaPixel.trim(),featMode:d.featMode,featSpeed:Math.min(30,Math.max(2,num(d.featSpeed)||5)),about:d.about,tiktok:d.tiktok.trim(),instagram:d.instagram.trim(),facebook:d.facebook.trim(),mapsUrl:d.mapsUrl.trim(),officeLL:(d.officeLL||'').trim(),gtagId:d.gtagId.trim(),incomeCats:lines(d.incomeCats),expenseCats:lines(d.expenseCats)});toast('انحفظت الإعدادات');fsRestart()});
+render();
+}
+</script>
+</body>
+</html>
